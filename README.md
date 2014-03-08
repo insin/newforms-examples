@@ -5,7 +5,9 @@ newforms-examples
 
 A basic form with as many of the default newforms fields and widgets as possible, showing a range of the options supported by the fields.
 
-This example also demonstrates overriding the default `render()` method and implementing custom rendering using `BoundField`s and JSX.
+This example also demonstrates:
+* overriding the default `render()` method
+* implementing custom rendering using `BoundField`s and JSX.
 
 ### [Custom Form Layout](http://bl.ocks.org/insin/raw/9335123/) ([source](https://gist.github.com/insin/9335123#file-customlayout-js))
 
