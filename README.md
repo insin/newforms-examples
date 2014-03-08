@@ -1,2 +1,43 @@
 newforms-examples
 =================
+
+### [All Default Fields](http://bl.ocks.org/insin/raw/9299833/) ([source](https://gist.github.com/insin/9299833#file-allfields-js))
+
+A basic form with as many of the default newforms fields and widgets as possible, showing a range of the options supported by the fields.
+
+This example also demonstrates overriding the default `render()` method and implementing custom rendering using `BoundField`s and JSX.
+
+### [Custom Form Layout](http://bl.ocks.org/insin/raw/9335123/) ([source](https://gist.github.com/insin/9335123#file-customlayout-js))
+
+This example shows how you could write a custom, reusable layout for laying out form fields in grids based on a specification like this:
+
+```javascript
+GridLayout({
+  layout: [
+    [ 'name'      ]
+  , [ 'theme'     ]
+  , [ 'startDate' , 'releaseDate' ]
+  , [ 'state'     , 'resources'   ]
+  , [ 'project'   ]
+  , [ 'estimate'  ]
+  , [ 'notes'     ]
+  ]
+, fillerCssClass: 'empty'
+, topErrorCssClass: 'top-errors'
+})
+```
+
+This is backed up with a base `FormLayout` object and a new base `LayoutForm` which uses it - these could serve as the basis for any kind of reusable custom layout you like with `BoundField`s and JSX.
+
+It also has examples of:
+* using a form's constructor to implement dynamic choices.
+* full-form cleaning by implementing a `clean()` method.
+* a standard pattern for using a newforms `Forn` within a React component, holding the form as state.
+
+### [Bootstrap Dynamic Contact Form](http://bl.ocks.org/insin/raw/9063570/) ([source](https://gist.github.com/insin/9063570#file-contactform-js))
+
+An example of implementing a custom layout using Bootstrap and using some React state to dynamically control which fields are displayed.
+
+It also has examples of:
+* extending a `RadioFieldRenderer` to customise its output.
+* implementing a `clean<FieldName>()` function for per-field validation logic.
