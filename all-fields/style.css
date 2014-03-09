@@ -1,0 +1,6 @@
+body { font-family: helvetica, arial, sans-serif; font-size: small;}
+thead th { text-align: left; padding: 4px 6px;}
+tbody th { text-align: right; padding: 4px 6px; }
+tbody th, td { vertical-align: top; }
+tbody td { padding: 4px 6px; }
+td.cleaned-data { white-space: pre; }
