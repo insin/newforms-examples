@@ -39,7 +39,7 @@ function jsx(name) {
   })
 }
 
-gulp.task('jsx-all', function() {
+gulp.task('jsx', function() {
   return gulp.src(exampleJSX)
     .pipe(plumber())
     .pipe(jsx())
@@ -50,16 +50,15 @@ gulp.task('jsx-all', function() {
     .pipe(gulp.dest('./'))
 })
 
-gulp.task('lint-all', ['jsx-all'], function() {
+gulp.task('lint', function() {
   return gulp.src(exampleJS)
     .pipe(jshint('./.jshintrc'))
     .pipe(jshint.reporter('jshint-stylish'))
 })
 
 gulp.task('watch', function() {
-  gulp.watch([exampleJS, exampleJSX], ['lint-all'])
+  gulp.watch(exampleJSX, ['jsx'])
+  gulp.watch(exampleJS, ['lint'])
 })
 
-gulp.task('default', function() {
-  gulp.start('lint-all', 'watch')
-})
+gulp.task('default', ['watch', 'jsx'])
