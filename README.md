@@ -36,7 +36,7 @@ It also has examples of:
 * full-form cleaning by implementing a `clean()` method.
 * a standard pattern for using a newforms `Forn` within a React component, holding the form as state.
 
-### [Bootstrap Dynamic Contact Form](http://bl.ocks.org/insin/raw/9063570/) ([source](https://gist.github.com/insin/9063570#file-contactform-js))
+### [Bootstrap Dynamic Contact Form](http://insin.github.io/newforms-examples/contact-form/) ([source](https://github.com/insin/newforms-examples/tree/master/contact-form))
 
 An example of implementing a custom layout using Bootstrap and using some React state to dynamically control which fields are displayed.
 
