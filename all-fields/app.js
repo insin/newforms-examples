@@ -27,9 +27,9 @@ var dateTimeFormats = dateFormats.map(function(df) { return df + ' ' + timeForma
 var AllFieldsForm = forms.Form.extend({
   CharField: forms.CharField({minLength: 5, maxLength: 10, helpText: {__html: 'Any text between 5 and 10 characters long.<br>(Try "Answer" then the Integer field below)'}})
 , CharFieldWithTextareaWidget: forms.CharField({label: 'Char field (textarea)', widget: forms.Textarea})
-, IntegerField: forms.IntegerField({minValue: 42, maxValue: 420, helpText: 'Any whole number between 42 and 420'})
-, FloatField: forms.FloatField({minValue: 4.2, maxValue: 42, helpText: 'Any number between 4.2 and 42'})
-, DecimalField: forms.DecimalField({maxDigits: 5, decimalPlaces: 2, helpText: '3 digits allowed before the decimal point, 2 after it'})
+, IntegerField: forms.IntegerField({minValue: 42, maxValue: 420, helpText: 'Any whole number between 42 and 420', validation: 'onBlur'})
+, FloatField: forms.FloatField({minValue: 4.2, maxValue: 42, helpText: 'Any number between 4.2 and 42', validation: 'manual'})
+, DecimalField: forms.DecimalField({maxDigits: 5, decimalPlaces: 2, helpText: '3 digits allowed before the decimal point, 2 after it', validation: 'onChange'})
 , DateField: forms.DateField({inputFormats: dateFormats, helpText: {__html: '<em>yyyy-mm-dd</em> or <em>dd/mm/yyyy</em>'}})
 , TimeField: forms.TimeField({inputFormats: [timeFormat], helpText: 'hh:mm, 24 hour'})
 , DateTimeField: forms.DateTimeField({inputFormats: dateTimeFormats, helpText: 'e.g. 2014-03-01 20:08'})
@@ -100,6 +100,7 @@ var AllFieldsForm = forms.Form.extend({
       return React.DOM.tr( {key:bf.htmlname}, 
         React.DOM.th(null, bf.labelTag()),
         React.DOM.td(null, bf.render(),help),
+        React.DOM.td(null, bf.field.widget instanceof forms.Input && JSON.stringify(bf.field.validation || bf.form.validation)),
         React.DOM.td(null, errors),
         React.DOM.td( {className:"cleaned-data"}, cleanedData)
       )
@@ -109,7 +110,13 @@ var AllFieldsForm = forms.Form.extend({
 
 var AllFields = React.createClass({displayName: 'AllFields',
   getInitialState: function() {
-    return({form: new AllFieldsForm()})
+    return({
+      form: new AllFieldsForm({validation: 'auto', onStateChange: this.onFormStateChange})
+    })
+  }
+
+, onFormStateChange: function() {
+    this.setState({form: this.state.form})
   }
 
 , render: function() {
@@ -124,6 +131,7 @@ var AllFields = React.createClass({displayName: 'AllFields',
           React.DOM.tr(null, 
             React.DOM.th(null, "Label"),
             React.DOM.th(null, "Input"),
+            React.DOM.th(null, "Validation"),
             React.DOM.th(null, "Errors"),
             React.DOM.th(null, "Cleaned Data")
           )
