@@ -25,7 +25,7 @@ var timeFormat = '%H:%M' // '14:30'
 var dateTimeFormats = dateFormats.map(function(df) { return df + ' ' + timeFormat})
 
 var AllFieldsForm = forms.Form.extend({
-  CharField: forms.CharField({minLength: 5, maxLength: 10, helpText: 'Any text between 5 and 10 characters long.'})
+  CharField: forms.CharField({minLength: 5, maxLength: 10, helpText: {__html: 'Any text between 5 and 10 characters long.<br>(Try "Answer" then the Integer field below)'}})
 , CharFieldWithTextareaWidget: forms.CharField({label: 'Char field (textarea)', widget: forms.Textarea})
 , IntegerField: forms.IntegerField({minValue: 42, maxValue: 420, helpText: 'Any whole number between 42 and 420'})
 , FloatField: forms.FloatField({minValue: 4.2, maxValue: 42, helpText: 'Any number between 4.2 and 42'})
@@ -58,6 +58,15 @@ var AllFieldsForm = forms.Form.extend({
 , IPAddressField: forms.IPAddressField({label: 'IP address field', helpText: '(Deprecated)'})
 , GenericIPAddressField: forms.GenericIPAddressField({label: 'Generic IP address field', helpText: 'An IPv4 or IPv6 address'})
 , SlugField: forms.SlugField({helpText: 'Letters, numbers, underscores, and hyphens only'})
+
+, clean: function() {
+    if (this.cleanedData.CharField == 'Answer' &&
+        this.cleanedData.IntegerField &&
+        this.cleanedData.IntegerField != 42) {
+      this.addError('IntegerField', "That's not The Answer!")
+      throw forms.ValidationError('Please enter The Answer to the Ultimate Question of Life, the Universe, and Everything')
+    }
+  }
 
 , render: function() {
     return this.boundFields().map(function(bf) {
@@ -104,7 +113,12 @@ var AllFields = React.createClass({displayName: 'AllFields',
   }
 
 , render: function() {
+    var nonFieldErrors = this.state.form.nonFieldErrors()
     return React.DOM.form( {encType:"multipart/form-data", ref:"form", onSubmit:this.onSubmit}, 
+      nonFieldErrors.isPopulated() && React.DOM.div(null, 
+        React.DOM.strong(null, "Non field errors:"),
+        nonFieldErrors.render()
+      ),
       React.DOM.table(null, 
         React.DOM.thead(null, 
           React.DOM.tr(null, 
