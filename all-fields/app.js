@@ -27,6 +27,7 @@ var dateTimeFormats = dateFormats.map(function(df) { return df + ' ' + timeForma
 var AllFieldsForm = forms.Form.extend({
   CharField: forms.CharField({minLength: 5, maxLength: 10, helpText: {__html: 'Any text between 5 and 10 characters long.<br>(Try "Answer" then the Integer field below)'}})
 , CharFieldWithTextareaWidget: forms.CharField({label: 'Char field (textarea)', widget: forms.Textarea})
+, CharFieldWithPasswordWidget: forms.CharField({widget: forms.PasswordInput})
 , IntegerField: forms.IntegerField({minValue: 42, maxValue: 420, helpText: 'Any whole number between 42 and 420', validation: 'onBlur'})
 , FloatField: forms.FloatField({minValue: 4.2, maxValue: 42, helpText: 'Any number between 4.2 and 42', validation: 'manual'})
 , DecimalField: forms.DecimalField({maxDigits: 5, decimalPlaces: 2, helpText: '3 digits allowed before the decimal point, 2 after it', validation: 'onChange'})
@@ -100,7 +101,7 @@ var AllFieldsForm = forms.Form.extend({
       return React.DOM.tr( {key:bf.htmlname}, 
         React.DOM.th(null, bf.labelTag()),
         React.DOM.td(null, bf.render(),help),
-        React.DOM.td(null, bf.field.widget instanceof forms.Input && JSON.stringify(bf.field.validation || bf.form.validation)),
+        React.DOM.td(null, JSON.stringify(bf.validation(), null, ' ').replace(/"/g, '')),
         React.DOM.td(null, errors),
         React.DOM.td( {className:"cleaned-data"}, cleanedData)
       )

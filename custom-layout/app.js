@@ -41,7 +41,7 @@ GridLayout.prototype.render = function(form) {
   var renderedRows = []
   var nonFieldErrors = form.nonFieldErrors()
   if (nonFieldErrors.isPopulated()) {
-    renderedRows.push(React.DOM.tr( {className:this.topErrorCssClass}, 
+    renderedRows.push(React.DOM.tr( {key:"topErrors", className:this.topErrorCssClass}, 
       React.DOM.td( {colSpan:2 * this.maxCol}, nonFieldErrors.render())
     ))
   }
@@ -55,8 +55,8 @@ GridLayout.prototype.render = function(form) {
       renderedCols.push(
         React.DOM.th( {className:cssClasses}, bf.labelTag())
       , React.DOM.td( {key:bf.htmlName, className:cssClasses}, 
-          errors.isPopulated() && errors.render(),
-          bf.render()
+          bf.asWidget(),
+          errors.isPopulated() && errors.render()
         )
       )
     }
@@ -66,7 +66,7 @@ GridLayout.prototype.render = function(form) {
                             className:this.fillerCssClass}
                         ))
     }
-    renderedRows.push(React.DOM.tr(null, renderedCols))
+    renderedRows.push(React.DOM.tr( {key:'row' + i}, renderedCols))
   }
   return renderedRows
 }
@@ -147,7 +147,11 @@ var projects = [
 
 var CustomLayout = React.createClass({displayName: 'CustomLayout',
   getInitialState: function() {
-    return {form: ReleaseForm(projects)}
+    return {form: ReleaseForm(projects, {validation: 'auto', onStateChange: this.onFormStateChange})}
+  }
+
+, onFormStateChange: function() {
+    this.setState({form: this.state.form})
   }
 
 , render: function() {
