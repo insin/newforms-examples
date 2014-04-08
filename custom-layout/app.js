@@ -54,7 +54,7 @@ GridLayout.prototype.render = function(form) {
       var cssClasses = bf.cssClasses()
       renderedCols.push(
         React.DOM.th( {className:cssClasses}, bf.labelTag())
-      , React.DOM.td( {key:bf.htmlName, className:cssClasses}, 
+      , React.DOM.td( {className:cssClasses}, 
           bf.asWidget(),
           errors.isPopulated() && errors.render()
         )
@@ -177,8 +177,7 @@ var CustomLayout = React.createClass({displayName: 'CustomLayout',
 
 , onSubmit: function(e) {
     e.preventDefault()
-    this.state.form.setData(forms.formData(this.refs.form.getDOMNode()))
-    this.forceUpdate()
+    this.state.form.validate(this.refs.form)
   }
 })
 

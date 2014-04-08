@@ -193,11 +193,8 @@ var ContactFormComponent = React.createClass({displayName: 'ContactFormComponent
 
 , onSubmit: function(e) {
     e.preventDefault()
-    var form = this.state.form
-    var data = forms.formData(this.refs.form.getDOMNode())
-    var isValid = form.setData(data)
-    this.setState({form: form})
-    this.props.onSubmit(isValid ? form.cleanedData : null)
+    var isValid = this.state.form.validate(this.refs.form)
+    this.props.onSubmit(isValid ? this.state.form.cleanedData : null)
   }
 
 , render: function() {
@@ -208,7 +205,7 @@ var ContactFormComponent = React.createClass({displayName: 'ContactFormComponent
         )
       ),
       React.DOM.div( {className:"panel-footer"}, 
-        React.DOM.input( {type:"submit", value:"Submit", className:"btn btn-primary btn-block"})
+        React.DOM.button( {type:"submit", className:"btn btn-primary btn-block"}, "Submit")
       )
     )
   }

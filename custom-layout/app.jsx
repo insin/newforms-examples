@@ -54,7 +54,7 @@ GridLayout.prototype.render = function(form) {
       var cssClasses = bf.cssClasses()
       renderedCols.push(
         <th className={cssClasses}>{bf.labelTag()}</th>
-      , <td key={bf.htmlName} className={cssClasses}>
+      , <td className={cssClasses}>
           {bf.asWidget()}
           {errors.isPopulated() && errors.render()}
         </td>
@@ -177,8 +177,7 @@ var CustomLayout = React.createClass({
 
 , onSubmit: function(e) {
     e.preventDefault()
-    this.state.form.setData(forms.formData(this.refs.form.getDOMNode()))
-    this.forceUpdate()
+    this.state.form.validate(this.refs.form)
   }
 })
 

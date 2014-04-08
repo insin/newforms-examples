@@ -24,6 +24,12 @@ var dateFormats = [
 var timeFormat = '%H:%M' // '14:30'
 var dateTimeFormats = dateFormats.map(function(df) { return df + ' ' + timeFormat})
 
+function FakeFile(name, url) {
+  this.name = name
+  this.url = url
+}
+FakeFile.prototype.toString = function() { return this.name }
+
 var AllFieldsForm = forms.Form.extend({
   CharField: forms.CharField({minLength: 5, maxLength: 10, helpText: {__html: 'Any text between 5 and 10 characters long.<br>(Try "Answer" then the Integer field below)'}})
 , CharFieldWithTextareaWidget: forms.CharField({label: 'Char field (textarea)', widget: forms.Textarea})
@@ -37,7 +43,9 @@ var AllFieldsForm = forms.Form.extend({
 , RegexField: forms.RegexField(/^I am Jack's /, {initial: "I am Jack's ", minLength: 20, helpText: 'Must begin with "I am Jack\'s " and be at least 20 characters long'})
 , EmailField: forms.EmailField()
 , FileField: forms.FileField({helpText: 'Required'})
+, FileFieldWithInitial: forms.FileField({initial: new FakeFile('Fake File', 'fake.file')})
 , ImageField: forms.ImageField({required: false, helpText: 'Optional'})
+, ImageFieldWithIniitial: forms.ImageField({required: false, initial: new FakeFile('Fake File', 'fake.file')   })
 , URLField: forms.URLField({label: 'URL field'})
 , BooleanField: forms.BooleanField()
 , NullBooleanField: forms.NullBooleanField()
@@ -155,8 +163,7 @@ var AllFields = React.createClass({displayName: 'AllFields',
 
 , onSubmit: function(e) {
     e.preventDefault()
-    this.state.form.setData(forms.formData(this.refs.form.getDOMNode()))
-    this.forceUpdate()
+    this.state.form.validate(this.refs.form)
   }
 })
 
