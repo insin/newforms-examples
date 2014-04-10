@@ -122,7 +122,7 @@ var EmailAddressForm = forms.Form.extend({
 })
 
 var AddressForm = forms.Form.extend({
-  address  : forms.CharField({required: false, widget: forms.Textarea({attrs: {rows: 3}})})
+  address  : forms.CharField({widget: forms.Textarea({attrs: {rows: 3}})})
 , type     : forms.ChoiceField({required: false, choices: ADDRESS_TYPE_CHOICES})
 , city     : forms.CharField({required: false, maxLength: 100, label: 'City/Town'})
 , county   : forms.CharField({required: false, maxLength: 100})
@@ -140,7 +140,7 @@ var AddressFormSet      = forms.formsetFactory(AddressForm)
 function addAnother(formset, e) {
   /* jshint validthis: true */
   e.preventDefault()
-  formset.extra++
+  formset.addAnother()
   this.forceUpdate()
 }
 
@@ -166,10 +166,26 @@ function widget(bf, cssClass) {
 var AddContact = React.createClass({
   getInitialState: function() {
     return {
-      phoneNumberForms: new PhoneNumberFormSet({prefix: this.prefix('phone')})
-    , emailAddressForms: new EmailAddressFormSet({prefix: this.prefix('email')})
-    , addressForms: new AddressFormSet({prefix: this.prefix('address')})
+      phoneNumberForms: new PhoneNumberFormSet({
+        prefix: this.prefix('phone')
+      , validation: 'auto'
+      , onStateChange: this.onFormStateChange
+      })
+    , emailAddressForms: new EmailAddressFormSet({
+        prefix: this.prefix('email')
+      , validation: 'auto'
+      , onStateChange: this.onFormStateChange
+      })
+    , addressForms: new AddressFormSet({
+        prefix: this.prefix('address')
+      , validation: 'auto'
+      , onStateChange: this.onFormStateChange
+      })
     }
+  }
+
+, onFormStateChange: function() {
+    this.forceUpdate()
   }
 
 , prefix: function(formsetType) {
@@ -269,9 +285,17 @@ var AddContact = React.createClass({
 var AddPerson = React.createClass({
   getInitialState: function() {
     return {
-      form: new PersonForm({prefix: 'person'})
+      form: new PersonForm({
+        prefix: 'person'
+      , validation: 'auto'
+      , onStateChange: this.onFormStateChange
+      })
     , cleanedData: false
     }
+  }
+
+, onFormStateChange: function() {
+    this.forceUpdate()
   }
 
 , onSubmit: function(data, areContactDetailsValid) {
@@ -282,7 +306,6 @@ var AddPerson = React.createClass({
         person: this.state.form.cleanedData
       }, this.refs.contactDetails.getCleanedData())
     }
-    console.info(cleanedData)
     this.setState({cleanedData: cleanedData})
   }
 
@@ -331,10 +354,22 @@ var AddPerson = React.createClass({
 var AddOrganisation = React.createClass({
   getInitialState: function() {
     return {
-      form: new OrganisationForm({prefix: 'org'})
-    , peopleForms: new InlinePersonFormSet({prefix: 'org'})
+      form: new OrganisationForm({
+        prefix: 'org'
+      , validation: 'auto'
+      , onStateChange: this.onFormStateChange
+      })
+    , peopleForms: new InlinePersonFormSet({
+        prefix: 'org'
+      , validation: 'auto'
+      , onStateChange: this.onFormStateChange
+      })
     , cleanedData: false
     }
+  }
+
+, onFormStateChange: function() {
+    this.forceUpdate()
   }
 
 , addAnother: addAnother
@@ -409,8 +444,13 @@ var AddOrganisation = React.createClass({
 , renderPeopleForms: function() {
     return this.state.peopleForms.forms().map(function(form) {
       var cells = form.boundFields().map(function(bf) {
-        return <td key={bf.htmlName}>
+        var errors = bf.errors().messages().map(function(message) {
+          return <div className="help-block">{message}</div>
+        })
+        var errorClass = errors.length > 0 ? 'has-error' : ''
+        return <td className={errorClass} key={bf.htmlName}>
           {bf.asWidget({attrs: {className: 'form-control'}})}
+          {errors}
         </td>
       })
       return <tr key={form.prefix}>{cells}</tr>

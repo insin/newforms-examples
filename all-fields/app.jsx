@@ -109,7 +109,8 @@ var AllFieldsForm = forms.Form.extend({
       return <tr key={bf.htmlname}>
         <th>{bf.labelTag()}</th>
         <td>{bf.render()}{help}</td>
-        <td>{JSON.stringify(bf.validation(), null, ' ').replace(/"/g, '')}</td>
+        <td>{''+bf.controlled()}</td>
+        <td>{JSON.stringify(bf.validation())}</td>
         <td>{errors}</td>
         <td className="cleaned-data">{cleanedData}</td>
       </tr>
@@ -120,7 +121,11 @@ var AllFieldsForm = forms.Form.extend({
 var AllFields = React.createClass({
   getInitialState: function() {
     return({
-      form: new AllFieldsForm({validation: 'auto', onStateChange: this.onFormStateChange})
+      form: new AllFieldsForm({
+        controlled: true
+      , validation: 'auto'
+      , onStateChange: this.onFormStateChange
+      })
     })
   }
 
@@ -140,6 +145,7 @@ var AllFields = React.createClass({
           <tr>
             <th>Label</th>
             <th>Input</th>
+            <th>Controlled</th>
             <th>Validation</th>
             <th>Errors</th>
             <th>Cleaned Data</th>

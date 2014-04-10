@@ -109,7 +109,8 @@ var AllFieldsForm = forms.Form.extend({
       return React.DOM.tr( {key:bf.htmlname}, 
         React.DOM.th(null, bf.labelTag()),
         React.DOM.td(null, bf.render(),help),
-        React.DOM.td(null, JSON.stringify(bf.validation(), null, ' ').replace(/"/g, '')),
+        React.DOM.td(null, ''+bf.controlled()),
+        React.DOM.td(null, JSON.stringify(bf.validation())),
         React.DOM.td(null, errors),
         React.DOM.td( {className:"cleaned-data"}, cleanedData)
       )
@@ -120,7 +121,11 @@ var AllFieldsForm = forms.Form.extend({
 var AllFields = React.createClass({displayName: 'AllFields',
   getInitialState: function() {
     return({
-      form: new AllFieldsForm({validation: 'auto', onStateChange: this.onFormStateChange})
+      form: new AllFieldsForm({
+        controlled: true
+      , validation: 'auto'
+      , onStateChange: this.onFormStateChange
+      })
     })
   }
 
@@ -140,6 +145,7 @@ var AllFields = React.createClass({displayName: 'AllFields',
           React.DOM.tr(null, 
             React.DOM.th(null, "Label"),
             React.DOM.th(null, "Input"),
+            React.DOM.th(null, "Controlled"),
             React.DOM.th(null, "Validation"),
             React.DOM.th(null, "Errors"),
             React.DOM.th(null, "Cleaned Data")
