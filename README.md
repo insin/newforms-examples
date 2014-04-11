@@ -53,3 +53,10 @@ This example also shows:
 * validating and getting cleanedData out of multiple FormSets.
 * reusing a component for common contact fields.
 * implementing a Bootstrap 3 form layout using a `form.boundFieldsObj()` and a custom field rendering function.
+
+### [Controlled Forms](http://insin.github.io/newforms-examples/controlled-forms/) ([source](https://github.com/insin/newforms-examples/tree/master/controlled-forms))
+
+An example of using controlled forms, which always reflect the state of the
+input data held in ``form.data``, using ``form.updateData()`` to update displayed
+form values and an interactive example of the effect options which can be passed
+to  ``updateData()`` have on existing error messages and ``cleanedData``.

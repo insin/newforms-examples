@@ -1,5 +1,5 @@
 /**
- * newforms 0.6.0-alpha (dev build at Wed, 09 Apr 2014 01:34:31 GMT) - https://github.com/insin/newforms
+ * newforms 0.6.0-alpha (dev build at Fri, 11 Apr 2014 02:04:41 GMT) - https://github.com/insin/newforms
  * MIT Licensed
  */
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.forms=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
@@ -2145,14 +2145,15 @@ BaseForm.prototype.validate = function(form) {
  * @param {Object.<string,*>} data new input data for the form.
  * @retun {boolean} true if the new data is valid.
  */
-BaseForm.prototype.setData = function(data) {
+BaseForm.prototype.setData = function(data, kwargs) {
+  kwargs = object.extend({prefixed: false}, kwargs)
   this._errors = null
   this._changedData = null
-  this.data = data
+  this.data = (kwargs.prefixed ? data : this._prefixData(data))
   if (!this.isBound) {
     this.isBound = true
   }
-  // This call ultimately triggers a fullClean() because _errors isn't set
+  // This call ultimately triggers a fullClean() because _errors is null
   var isValid = this.isValid()
   if (typeof this.onStateChange == 'function') {
     this.onStateChange()
@@ -2161,24 +2162,33 @@ BaseForm.prototype.setData = function(data) {
 }
 
 /**
- * Updates some of the form's input data, then triggers validation of fields
- * which had their input data updated as well as form-wide cleaning.
+ * Updates some of the form's input data, then optionally triggers validation of
+ * updated fields and form-wide cleaning, or clears existing errors from the
+ * updated fields.
  * @param {Object.<string,*>} data updated input data for the form.
+ * @param {Object.<string,boolean>} kwargs update options.
  */
-BaseForm.prototype.updateData = function(data) {
+BaseForm.prototype.updateData = function(data, kwargs) {
+  kwargs = object.extend({prefixed: false, validate: true, clearValidation: true}, kwargs)
   this._changedData = null
-  object.extend(this.data, data)
+  object.extend(this.data, (kwargs.prefixed ? data : this._prefixData(data)))
   if (!this.isBound) {
     this.isBound = true
   }
 
   var fields = Object.keys(data)
-  if (this.prefix !== null) {
-    for (var i = 0, l = fields.length; i < l; i++) {
-      fields[i] = this.removePrefix(fields[i])
-    }
+  if (kwargs.prefixed) {
+    fields = fields.map(this.removePrefix.bind(this))
   }
-  this.partialClean(fields)
+
+  if (kwargs.validate) {
+    this.partialClean(fields)
+  }
+  else if (kwargs.clearValidation) {
+    this._removeErrors(fields)
+    this._removeCleanedData(fields)
+  }
+
   if (typeof this.onStateChange == 'function') {
     this.onStateChange()
   }
@@ -2767,6 +2777,22 @@ BaseForm.prototype._fieldInitialData = function() {
     }
   }
   return fieldInitial
+}
+
+/**
+ * Return a version of the given data object with prefixes added to the property
+ * names if this form has a prefix, otherwise returns the object itself.
+ * @param {Object.<string,*>} data
+ * @return {Object.<string,*>}
+ */
+BaseForm.prototype._prefixData = function(data) {
+  if (this.prefix === null) { return data }
+  var prefixedData = {}
+  var fieldNames = Object.keys(data)
+  for (var i = 0, l = fieldNames.length; i < l; i++) {
+    prefixedData[this.addPrefix(fieldNames[i])] = data[fieldNames[i]]
+  }
+  return prefixedData
 }
 
 /**
