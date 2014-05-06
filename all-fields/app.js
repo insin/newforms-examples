@@ -122,15 +122,10 @@ var AllFields = React.createClass({displayName: 'AllFields',
   getInitialState: function() {
     return({
       form: new AllFieldsForm({
-        controlled: true
-      , validation: 'auto'
-      , onStateChange: this.onFormStateChange
+        validation: 'auto'
+      , onStateChange: this.forceUpdate.bind(this)
       })
     })
-  }
-
-, onFormStateChange: function() {
-    this.setState({form: this.state.form})
   }
 
 , render: function() {

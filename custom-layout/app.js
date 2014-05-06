@@ -147,11 +147,12 @@ var projects = [
 
 var CustomLayout = React.createClass({displayName: 'CustomLayout',
   getInitialState: function() {
-    return {form: ReleaseForm(projects, {validation: 'auto', onStateChange: this.onFormStateChange})}
-  }
-
-, onFormStateChange: function() {
-    this.setState({form: this.state.form})
+    return {
+      form: ReleaseForm(projects, {
+        validation: 'auto'
+      , onStateChange: this.forceUpdate.bind(this)
+      })
+    }
   }
 
 , render: function() {

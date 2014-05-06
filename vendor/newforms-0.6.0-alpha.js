@@ -1,14 +1,529 @@
 /**
- * newforms 0.6.0-alpha (dev build at Fri, 11 Apr 2014 02:04:41 GMT) - https://github.com/insin/newforms
+ * newforms 0.6.0-alpha (dev build at Tue, 06 May 2014 16:59:50 GMT) - https://github.com/insin/newforms
  * MIT Licensed
  */
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.forms=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 'use strict';
 
+var Concur = _dereq_('Concur')
+var is = _dereq_('isomorph/is')
+var format = _dereq_('isomorph/format').formatObj
+var object = _dereq_('isomorph/object')
+var React = (window.React)
+
+var util = _dereq_('./util')
+var widgets = _dereq_('./widgets')
+
+/**
+ * A field and its associated data.
+ * @param {Form} form a form.
+ * @param {Field} field one of the form's fields.
+ * @param {String} name the name under which the field is held in the form.
+ * @constructor
+ */
+var BoundField = Concur.extend({
+  constructor: function BoundField(form, field, name) {
+    if (!(this instanceof BoundField)) { return new BoundField(form, field, name) }
+    this.form = form
+    this.field = field
+    this.name = name
+    this.htmlName = form.addPrefix(name)
+    this.htmlInitialName = form.addInitialPrefix(name)
+    this.htmlInitialId = form.addInitialPrefix(this.autoId())
+    this.label = this.field.label !== null ? this.field.label : util.prettyName(name)
+    this.helpText = field.helpText || ''
+  }
+})
+
+BoundField.prototype.errors = function() {
+  return this.form.errors(this.name) || new this.form.errorConstructor()
+}
+
+BoundField.prototype.errorMessage = function() {
+  return this.errors().messages()[0]
+}
+
+BoundField.prototype.errorMessages = function() {
+  return this.errors().messages()
+}
+
+BoundField.prototype.isHidden = function() {
+  return this.field.widget.isHidden
+}
+
+/**
+ * Calculates and returns the id attribute for this BoundField if the associated
+ * form has an autoId. Returns an empty string otherwise.
+ */
+BoundField.prototype.autoId = function() {
+  var autoId = this.form.autoId
+  if (autoId) {
+    autoId = ''+autoId
+    if (autoId.indexOf('{name}') != -1) {
+      return format(autoId, {name: this.htmlName})
+    }
+    return this.htmlName
+  }
+  return ''
+}
+
+/**
+ * Returns the data for this BoundFIeld, or null if it wasn't given.
+ */
+BoundField.prototype.data = function() {
+  return this.field.widget.valueFromData(this.form.data,
+                                         this.form.files,
+                                         this.htmlName)
+}
+
+/**
+ * Wrapper around the field widget's idForLabel method. Useful, for example, for
+ * focusing on this field regardless of whether it has a single widget or a
+ * MutiWidget.
+ */
+BoundField.prototype.idForLabel = function() {
+  var widget = this.field.widget
+  var id = object.get(widget.attrs, 'id', this.autoId())
+  return widget.idForLabel(id)
+}
+
+BoundField.prototype.render = function(kwargs) {
+  if (this.field.showHiddenInitial) {
+    return React.DOM.div(null, this.asWidget(kwargs),
+                         this.asHidden({onlyInitial: true}))
+  }
+  return this.asWidget(kwargs)
+}
+
+/**
+ * Returns a list of SubWidgets that comprise all widgets in this BoundField.
+ * This really is only useful for RadioSelect and CheckboxSelectMultiple
+ * widgets, so that you can iterate over individual inputs when rendering.
+ */
+BoundField.prototype.subWidgets = function() {
+  var id = this.field.widget.attrs.id || this.autoId()
+  var kwargs = {attrs: {}}
+  if (id) {
+    kwargs.attrs.id = id
+  }
+  return this.field.widget.subWidgets(this.htmlName, this.value(), kwargs)
+}
+
+/**
+ * Renders a widget for the field.
+ * @param {Object} [kwargs] configuration options
+ * @config {Widget} [widget] an override for the widget used to render the field
+ *   - if not provided, the field's configured widget will be used
+ * @config {Object} [attrs] additional attributes to be added to the field's widget.
+ */
+BoundField.prototype.asWidget = function(kwargs) {
+  kwargs = object.extend({
+    widget: null, attrs: null, onlyInitial: false
+  }, kwargs)
+  var widget = (kwargs.widget !== null ? kwargs.widget : this.field.widget)
+  var attrs = (kwargs.attrs !== null ? kwargs.attrs : {})
+  var autoId = this.autoId()
+  var name = !kwargs.onlyInitial ? this.htmlName : this.htmlInitialName
+  if (autoId &&
+      typeof attrs.id == 'undefined' &&
+      typeof widget.attrs.id == 'undefined') {
+    attrs.id = (!kwargs.onlyInitial ? autoId : this.htmlInitialId)
+  }
+  if (typeof attrs.key == 'undefined') {
+    attrs.key = name
+  }
+  var controlled = this.controlled(widget)
+  var validation = this.validation(widget)
+
+  // Add an onChange event handler to update form.data when the field is changed
+  // if it's controlled or uses interactive validation.
+  if (controlled || validation !== 'manual') {
+    attrs.onChange =
+      this.form._handleFieldChange.bind(this.form, validation)
+  }
+
+  // If validation should happen on events other than onChange, also add event
+  // handlers for them.
+  if (validation != 'manual' && validation.events) {
+    for (var i = 0, l = validation.events.length; i < l; i++) {
+      var eventName = validation.events[i]
+      attrs[eventName] =
+        this.form._handleFieldValidation.bind(this.form, {event: eventName})
+    }
+  }
+
+  var renderKwargs = {attrs: attrs, controlled: controlled}
+  if (widget.needsInitialValue) {
+    renderKwargs.initialValue = this.initialValue()
+  }
+  return widget.render(name, this.value(), renderKwargs)
+}
+
+/**
+ * Determines if the widget should be a controlled or uncontrolled React
+ * component.
+ */
+BoundField.prototype.controlled = function(widget) {
+  if (arguments.length === 0) {
+    widget = this.field.widget
+  }
+  var controlled = false
+  if (widget.isValueSettable) {
+    // If the field has any controlled config set, it should take precedence,
+    // otherwise use the form's as it has a default.
+    controlled = (this.field.controlled !== null
+                  ? this.field.controlled
+                  : this.form.controlled)
+  }
+  return controlled
+}
+
+/**
+ * Gets the configured validation for the field or form, allowing the widget
+ * which is going to be rendered to override it if necessary.
+ */
+BoundField.prototype.validation = function(widget) {
+  if (arguments.length === 0) {
+    widget = this.field.widget
+  }
+  // If the field has any validation config set, it should take precedence,
+  // otherwise use the form's as it has a default.
+  var validation = this.field.validation || this.form.validation
+  // Allow widgets to override the type of validation that's used for them -
+  // primarily for inputs which can only be changed by click/selection.
+  if (validation !== 'manual' && widget.validation !== null) {
+    validation = widget.validation
+  }
+  return validation
+}
+
+/**
+ * Renders the field as a text input.
+ * @param {Object} [kwargs] widget options.
+ */
+BoundField.prototype.asText = function(kwargs) {
+  kwargs = object.extend({}, kwargs, {widget: widgets.TextInput()})
+  return this.asWidget(kwargs)
+}
+
+/**
+ * Renders the field as a textarea.
+ * @param {Object} [kwargs] widget options.
+ */
+BoundField.prototype.asTextarea = function(kwargs) {
+  kwargs = object.extend({}, kwargs, {widget: widgets.Textarea()})
+  return this.asWidget(kwargs)
+}
+
+/**
+ * Renders the field as a hidden field.
+ * @param {Object} [kwargs] widget options.
+ */
+BoundField.prototype.asHidden = function(kwargs) {
+  kwargs = object.extend({}, kwargs, {widget: new this.field.hiddenWidget()})
+  return this.asWidget(kwargs)
+}
+
+/**
+ * Returns the value to be displayed for this BoundField, using the initia
+ * value if the form is not bound or the data otherwise.
+ */
+BoundField.prototype.value = function() {
+  var data
+  if (this.form.isInitialRender) {
+    data = this.initialValue()
+  }
+  else {
+    data = this.field.boundData(this.data(),
+                                object.get(this.form.initial,
+                                           this.name,
+                                           this.field.initial))
+  }
+  return this.field.prepareValue(data)
+}
+
+/**
+ * Returns the initial value for this BoundField from the form or field's
+ * configured initial values - the field's default initial value of null will
+ * be returned if none was configured.
+ */
+BoundField.prototype.initialValue = function() {
+  var value = object.get(this.form.initial, this.name, this.field.initial)
+  if (is.Function(value)) {
+    value = value()
+  }
+  return value
+}
+
+BoundField.prototype._addLabelSuffix = function(label, labelSuffix) {
+  // Only add the suffix if the label does not end in punctuation
+  if (labelSuffix && ':?.!'.indexOf(label.charAt(label.length - 1)) == -1) {
+    return label + labelSuffix
+  }
+  return label
+}
+
+/**
+ * Wraps the given contents in a <label> if the field has an id attribute. If
+ * contents aren't given, uses the field's label.
+ *
+ * If attrs are given, they're used as HTML attributes on the <label> tag.
+ *
+ * @param {Object} [kwargs] configuration options.
+ * @config {String} [contents] contents for the label - if not provided, label
+ *                             contents will be generated from the field itself.
+ * @config {Object} [attrs] additional attributes to be added to the label.
+ * @config {String} [labelSuffix] allows overriding the form's labelSuffix.
+ */
+BoundField.prototype.labelTag = function(kwargs) {
+  kwargs = object.extend({
+    contents: this.label, attrs: null, labelSuffix: this.form.labelSuffix
+  }, kwargs)
+  var contents = this._addLabelSuffix(kwargs.contents, kwargs.labelSuffix)
+  var widget = this.field.widget
+  var id = object.get(widget.attrs, 'id', this.autoId())
+  if (id) {
+    var attrs = object.extend(kwargs.attrs || {}, {htmlFor: widget.idForLabel(id)})
+    contents = React.DOM.label(attrs, contents)
+  }
+  return contents
+}
+
+/**
+ * Puts together additional CSS classes for this field based on the field, the
+ * form and whether or not the field has errors.
+ * @param {string=} extra CSS classes for the field.
+ * @return {string} space-separated CSS classes for this field.
+ */
+BoundField.prototype.cssClasses = function(extraCssClasses) {
+  var cssClasses = extraCssClasses ? [extraCssClasses] : []
+  if (this.field.cssClass !== null) {
+    cssClasses.push(this.field.cssClass)
+  }
+  if (typeof this.form.rowCssClass != 'undefined') {
+    cssClasses.push(this.form.rowCssClass)
+  }
+  if (this.errors().isPopulated() &&
+      typeof this.form.errorCssClass != 'undefined') {
+    cssClasses.push(this.form.errorCssClass)
+  }
+  if (this.field.required &&
+     typeof this.form.requiredCssClass != 'undefined') {
+    cssClasses.push(this.form.requiredCssClass)
+  }
+  return cssClasses.join(' ')
+}
+
+module.exports = BoundField
+
+},{"./util":10,"./widgets":11,"Concur":12,"isomorph/format":15,"isomorph/is":16,"isomorph/object":17}],2:[function(_dereq_,module,exports){
+'use strict';
+
+var Concur = _dereq_('Concur')
+var validators = _dereq_('validators')
+var React = (window.React)
+
+var ValidationError = validators.ValidationError
+
+/**
+ * A list of errors which knows how to display itself in various formats.
+ * @param {Array=} list a list of errors.
+ * @constructor
+ */
+var ErrorList = Concur.extend({
+  constructor: function ErrorList(list) {
+    if (!(this instanceof ErrorList)) { return new ErrorList(list) }
+    this.data = list || []
+  }
+})
+
+/**
+ * Adds more errors.
+ * @param {Array} errorList a list of errors
+ */
+ErrorList.prototype.extend = function(errorList) {
+  this.data.push.apply(this.data, errorList)
+}
+
+ErrorList.prototype.length = function() {
+  return this.data.length
+}
+
+/**
+ * Determines if any errors are present.
+ */
+ErrorList.prototype.isPopulated = function() {
+  return (this.length() > 0)
+}
+
+/**
+ * Returns the list of messages held in this ErrorList.
+ */
+ErrorList.prototype.messages = function() {
+  var messages = []
+  for (var i = 0, l = this.data.length; i < l; i++) {
+    var error = this.data[i]
+    if (error instanceof ValidationError) {
+      error = error.messages()[0]
+    }
+    messages.push(error)
+  }
+  return messages
+}
+
+/**
+ *  Default display is as a list.
+ */
+ErrorList.prototype.render = function() {
+  return this.asUl()
+}
+
+/**
+ * Displays errors as a list.
+ */
+ErrorList.prototype.asUl = function() {
+  if (!this.isPopulated()) {
+    return
+  }
+  return React.DOM.ul({className: 'errorlist'}
+  , this.messages().map(function(error) {
+      return React.DOM.li(null, error)
+    })
+  )
+}
+
+/**
+ * Displays errors as text.
+ */
+ErrorList.prototype.asText = ErrorList.prototype.toString =function() {
+  return this.messages().map(function(error) {
+    return '* ' + error
+  }).join('\n')
+}
+
+ErrorList.prototype.asData = function() {
+  return this.data
+}
+
+ErrorList.prototype.toJSON = function() {
+  return new ValidationError(this.data).errorList.map(function(error) {
+    return {
+      message: error.messages()[0]
+    , code: error.code || ''
+    }
+  })
+}
+
+module.exports = ErrorList
+
+},{"Concur":12,"validators":22}],3:[function(_dereq_,module,exports){
+'use strict';
+
+var Concur = _dereq_('Concur')
+var object = _dereq_('isomorph/object')
+var React = (window.React)
+
+/**
+ * A collection of field errors that knows how to display itself in various
+ * formats. This object's .error properties are the field names and
+ * corresponding values are the errors.
+ * @constructor
+ */
+var ErrorObject = Concur.extend({
+  constructor: function ErrorObject(errors) {
+    if (!(this instanceof ErrorObject)) { return new ErrorObject(errors) }
+    this.errors = errors || {}
+  }
+})
+
+ErrorObject.prototype.set = function(field, error) {
+  this.errors[field] = error
+}
+
+ErrorObject.prototype.get = function(field) {
+  return this.errors[field]
+}
+
+ErrorObject.prototype.remove = function(fields) {
+  return delete this.errors[fields]
+}
+
+ErrorObject.prototype.removeAll = function(fields) {
+  for (var i = 0, l = fields.length; i < l; i++) {
+    delete this.errors[fields[i]]
+  }
+}
+
+ErrorObject.prototype.hasField = function(field) {
+  return object.hasOwn(this.errors, field)
+}
+
+ErrorObject.prototype.length = function() {
+  return Object.keys(this.errors).length
+}
+
+/**
+ * Determines if any errors are present.
+ */
+ErrorObject.prototype.isPopulated = function() {
+  return (this.length() > 0)
+}
+
+/**
+ * Default display is as a list.
+ */
+ErrorObject.prototype.render = function() {
+  return this.asUl()
+}
+
+/**
+ * Displays error details as a list.
+ */
+ErrorObject.prototype.asUl = function() {
+  var items = Object.keys(this.errors).map(function(field) {
+    return React.DOM.li(null, field, this.errors[field].asUl())
+  }.bind(this))
+  if (items.length === 0) { return }
+  return React.DOM.ul({className: 'errorlist'}, items)
+}
+
+/**
+ * Displays error details as text.
+ */
+ErrorObject.prototype.asText = ErrorObject.prototype.toString = function() {
+  return Object.keys(this.errors).map(function(field) {
+    var mesages = this.errors[field].messages()
+    return ['* ' + field].concat(mesages.map(function(message) {
+      return ('  * ' + message)
+    })).join('\n')
+  }.bind(this)).join('\n')
+}
+
+ErrorObject.prototype.asData = function() {
+  var data = {}
+  Object.keys(this.errors).map(function(field) {
+    data[field] = this.errors[field].asData()
+  }.bind(this))
+  return data
+}
+
+ErrorObject.prototype.toJSON = function() {
+  var jsonObj = {}
+  Object.keys(this.errors).map(function(field) {
+    jsonObj[field] = this.errors[field].toJSON()
+  }.bind(this))
+  return jsonObj
+}
+
+module.exports = ErrorObject
+
+},{"Concur":12,"isomorph/object":17}],4:[function(_dereq_,module,exports){
+'use strict';
+
 module.exports = {
   browser: typeof process == 'undefined'
 }
-},{}],2:[function(_dereq_,module,exports){
+},{}],5:[function(_dereq_,module,exports){
 'use strict';
 
 var Concur = _dereq_('Concur')
@@ -60,13 +575,7 @@ var Field = Concur.extend({
     this.showHiddenInitial = kwargs.showHiddenInitial
     this.helpText = kwargs.helpText || ''
     this.cssClass = kwargs.cssClass
-    this.validation = kwargs.validation
-    // Normalise validation config to an object if it's not set to manual
-    if (is.String(this.validation) && this.validation != 'manual') {
-      this.validation = (this.validation == 'auto'
-                         ? {event: 'onChange', delay: 250}
-                         : {event: this.validation})
-    }
+    this.validation = util.normaliseValidation(kwargs.validation)
     this.controlled = kwargs.controlled
     this.custom = kwargs.custom
 
@@ -1639,7 +2148,7 @@ module.exports = {
 , SlugField: SlugField
 }
 
-},{"./env":1,"./formats":3,"./util":7,"./widgets":8,"Concur":9,"isomorph/is":13,"isomorph/object":14,"isomorph/time":15,"isomorph/url":16,"validators":19}],3:[function(_dereq_,module,exports){
+},{"./env":4,"./formats":6,"./util":10,"./widgets":11,"Concur":12,"isomorph/is":16,"isomorph/object":17,"isomorph/time":18,"isomorph/url":19,"validators":22}],6:[function(_dereq_,module,exports){
 'use strict';
 
 var DEFAULT_DATE_INPUT_FORMATS = [
@@ -1674,326 +2183,33 @@ module.exports = {
 , DEFAULT_DATETIME_INPUT_FORMATS: DEFAULT_DATETIME_INPUT_FORMATS
 }
 
-},{}],4:[function(_dereq_,module,exports){
+},{}],7:[function(_dereq_,module,exports){
 'use strict';
 
 var Concur = _dereq_('Concur')
 var is = _dereq_('isomorph/is')
-var format = _dereq_('isomorph/format').formatObj
 var object = _dereq_('isomorph/object')
 var copy = _dereq_('isomorph/copy')
 var validators = _dereq_('validators')
 var React = (window.React)
 
-var env = _dereq_('./env')
-var util = _dereq_('./util')
 var fields = _dereq_('./fields')
-var widgets = _dereq_('./widgets')
+var util = _dereq_('./util')
+var BoundField = _dereq_('./BoundField')
+var ErrorList = _dereq_('./ErrorList')
+var ErrorObject = _dereq_('./ErrorObject')
 
-var ErrorList = util.ErrorList
-var ErrorObject = util.ErrorObject
-var ValidationError = validators.ValidationError
 var Field = fields.Field
 var FileField = fields.FileField
-var Textarea = widgets.Textarea
-var TextInput = widgets.TextInput
+var ValidationError = validators.ValidationError
 
 /** Property under which non-field-specific errors are stored. */
 var NON_FIELD_ERRORS = '__all__'
 
 /**
- * A field and its associated data.
- * @param {Form} form a form.
- * @param {Field} field one of the form's fields.
- * @param {String} name the name under which the field is held in the form.
- * @constructor
- */
-var BoundField = Concur.extend({
-  constructor: function BoundField(form, field, name) {
-    if (!(this instanceof BoundField)) { return new BoundField(form, field, name) }
-    this.form = form
-    this.field = field
-    this.name = name
-    this.htmlName = form.addPrefix(name)
-    this.htmlInitialName = form.addInitialPrefix(name)
-    this.htmlInitialId = form.addInitialPrefix(this.autoId())
-    this.label = this.field.label !== null ? this.field.label : util.prettyName(name)
-    this.helpText = field.helpText || ''
-  }
-})
-
-BoundField.prototype.errors = function() {
-  return this.form.errors(this.name) || new this.form.errorConstructor()
-}
-
-BoundField.prototype.isHidden = function() {
-  return this.field.widget.isHidden
-}
-
-/**
- * Calculates and returns the id attribute for this BoundField if the associated
- * form has an autoId. Returns an empty string otherwise.
- */
-BoundField.prototype.autoId = function() {
-  var autoId = this.form.autoId
-  if (autoId) {
-    autoId = ''+autoId
-    if (autoId.indexOf('{name}') != -1) {
-      return format(autoId, {name: this.htmlName})
-    }
-    return this.htmlName
-  }
-  return ''
-}
-
-/**
- * Returns the data for this BoundFIeld, or null if it wasn't given.
- */
-BoundField.prototype.data = function() {
-  return this.field.widget.valueFromData(this.form.data,
-                                         this.form.files,
-                                         this.htmlName)
-}
-
-/**
- * Wrapper around the field widget's idForLabel method. Useful, for example, for
- * focusing on this field regardless of whether it has a single widget or a
- * MutiWidget.
- */
-BoundField.prototype.idForLabel = function() {
-  var widget = this.field.widget
-  var id = object.get(widget.attrs, 'id', this.autoId())
-  return widget.idForLabel(id)
-}
-
-BoundField.prototype.render = function(kwargs) {
-  if (this.field.showHiddenInitial) {
-    return React.DOM.div(null, this.asWidget(kwargs),
-                         this.asHidden({onlyInitial: true}))
-  }
-  return this.asWidget(kwargs)
-}
-
-/**
- * Returns a list of SubWidgets that comprise all widgets in this BoundField.
- * This really is only useful for RadioSelect and CheckboxSelectMultiple
- * widgets, so that you can iterate over individual inputs when rendering.
- */
-BoundField.prototype.subWidgets = function() {
-  var id = this.field.widget.attrs.id || this.autoId()
-  var kwargs = {attrs: {}}
-  if (id) {
-    kwargs.attrs.id = id
-  }
-  return this.field.widget.subWidgets(this.htmlName, this.value(), kwargs)
-}
-
-/**
- * Renders a widget for the field.
- * @param {Object} [kwargs] configuration options
- * @config {Widget} [widget] an override for the widget used to render the field
- *   - if not provided, the field's configured widget will be used
- * @config {Object} [attrs] additional attributes to be added to the field's widget.
- */
-BoundField.prototype.asWidget = function(kwargs) {
-  kwargs = object.extend({
-    widget: null, attrs: null, onlyInitial: false
-  }, kwargs)
-  var widget = (kwargs.widget !== null ? kwargs.widget : this.field.widget)
-  var attrs = (kwargs.attrs !== null ? kwargs.attrs : {})
-  var autoId = this.autoId()
-  var name = !kwargs.onlyInitial ? this.htmlName : this.htmlInitialName
-  if (autoId &&
-      typeof attrs.id == 'undefined' &&
-      typeof widget.attrs.id == 'undefined') {
-    attrs.id = (!kwargs.onlyInitial ? autoId : this.htmlInitialId)
-  }
-  if (typeof attrs.key == 'undefined') {
-    attrs.key = name
-  }
-  var controlled = this.controlled(widget)
-  var validation = this.validation(widget)
-
-  // Add an onChange event handler to update form.data when the field is changed
-  // if it's controlled or uses interactive validation.
-  if (controlled || validation != 'manual') {
-    attrs.onChange =
-      util.bindRight(this.form._handleFieldChange, this.form, validation)
-  }
-
-  // If validation should happen on an event other than onChange, also add an
-  // event handler for it.
-  if (validation != 'manual' && validation.event != 'onChange') {
-    attrs[validation.event] =
-      util.bindRight(this.form._handleFieldValidation, this.form, validation)
-  }
-
-  var renderKwargs = {attrs: attrs, controlled: controlled}
-  if (widget.needsInitialValue) {
-    renderKwargs.initialValue = this.initialValue()
-  }
-  return widget.render(name, this.value(), renderKwargs)
-}
-
-/**
- * Determines if the widget should be a controlled or uncontrolled React
- * component.
- */
-BoundField.prototype.controlled = function(widget) {
-  if (arguments.length === 0) {
-    widget = this.field.widget
-  }
-  var controlled = false
-  if (widget.isValueSettable) {
-    // If the field has any controlled config set, it should take precedence,
-    // otherwise use the form's as it has a default.
-    controlled = (this.field.controlled !== null
-                  ? this.field.controlled
-                  : this.form.controlled)
-  }
-  return controlled
-}
-
-/**
- * Gets the configured validation for the field or form, allowing the widget
- * which is going to be rendered to override it if necessary.
- */
-BoundField.prototype.validation = function(widget) {
-  if (arguments.length === 0) {
-    widget = this.field.widget
-  }
-  // If the field has any validation config set, it should take precedence,
-  // otherwise use the form's as it has a default.
-  var validation = this.field.validation || this.form.validation
-  // Allow widgets to override the type of validation that's used for them -
-  // primarily for inputs which can only be changed by click/selection.
-  if (validation != 'manual' && widget.validation !== null) {
-    validation = widget.validation
-  }
-  return validation
-}
-
-/**
- * Renders the field as a text input.
- * @param {Object} [kwargs] widget options.
- */
-BoundField.prototype.asText = function(kwargs) {
-  kwargs = object.extend({}, kwargs, {widget: TextInput()})
-  return this.asWidget(kwargs)
-}
-
-/**
- * Renders the field as a textarea.
- * @param {Object} [kwargs] widget options.
- */
-BoundField.prototype.asTextarea = function(kwargs) {
-  kwargs = object.extend({}, kwargs, {widget: Textarea()})
-  return this.asWidget(kwargs)
-}
-
-/**
- * Renders the field as a hidden field.
- * @param {Object} [kwargs] widget options.
- */
-BoundField.prototype.asHidden = function(kwargs) {
-  kwargs = object.extend({}, kwargs, {widget: new this.field.hiddenWidget()})
-  return this.asWidget(kwargs)
-}
-
-/**
- * Returns the value to be displayed for this BoundField, using the initia
- * value if the form is not bound or the data otherwise.
- */
-BoundField.prototype.value = function() {
-  var data
-  if (!this.form.isBound) {
-    data = this.initialValue()
-  }
-  else {
-    data = this.field.boundData(this.data(),
-                                object.get(this.form.initial,
-                                           this.name,
-                                           this.field.initial))
-  }
-  return this.field.prepareValue(data)
-}
-
-/**
- * Returns the initial value for this BoundField from the form or field's
- * configured initial values - the field's default initial value of null will
- * be returned if none was configured.
- */
-BoundField.prototype.initialValue = function() {
-  var value = object.get(this.form.initial, this.name, this.field.initial)
-  if (is.Function(value)) {
-    value = value()
-  }
-  return value
-}
-
-BoundField.prototype._addLabelSuffix = function(label, labelSuffix) {
-  // Only add the suffix if the label does not end in punctuation
-  if (labelSuffix && ':?.!'.indexOf(label.charAt(label.length - 1)) == -1) {
-    return label + labelSuffix
-  }
-  return label
-}
-
-/**
- * Wraps the given contents in a <label> if the field has an id attribute. If
- * contents aren't given, uses the field's label.
- *
- * If attrs are given, they're used as HTML attributes on the <label> tag.
- *
- * @param {Object} [kwargs] configuration options.
- * @config {String} [contents] contents for the label - if not provided, label
- *                             contents will be generated from the field itself.
- * @config {Object} [attrs] additional attributes to be added to the label.
- * @config {String} [labelSuffix] allows overriding the form's labelSuffix.
- */
-BoundField.prototype.labelTag = function(kwargs) {
-  kwargs = object.extend({
-    contents: this.label, attrs: null, labelSuffix: this.form.labelSuffix
-  }, kwargs)
-  var contents = this._addLabelSuffix(kwargs.contents, kwargs.labelSuffix)
-  var widget = this.field.widget
-  var id = object.get(widget.attrs, 'id', this.autoId())
-  if (id) {
-    var attrs = object.extend(kwargs.attrs || {}, {htmlFor: widget.idForLabel(id)})
-    contents = React.DOM.label(attrs, contents)
-  }
-  return contents
-}
-
-/**
- * Puts together additional CSS classes for this field based on the field, the
- * form and whether or not the field has errors.
- * @param {string=} extra CSS classes for the field.
- * @return {string} space-separated CSS classes for this field.
- */
-BoundField.prototype.cssClasses = function(extraCssClasses) {
-  var cssClasses = extraCssClasses ? [extraCssClasses] : []
-  if (this.field.cssClass !== null) {
-    cssClasses.push(this.field.cssClass)
-  }
-  if (typeof this.form.rowCssClass != 'undefined') {
-    cssClasses.push(this.form.rowCssClass)
-  }
-  if (this.errors().isPopulated() &&
-      typeof this.form.errorCssClass != 'undefined') {
-    cssClasses.push(this.form.errorCssClass)
-  }
-  if (this.field.required &&
-     typeof this.form.requiredCssClass != 'undefined') {
-    cssClasses.push(this.form.requiredCssClass)
-  }
-  return cssClasses.join(' ')
-}
-
-/**
  * A collection of Fields that knows how to validate and display itself.
  * @constructor
- * @param {Object}
+ * @param {Object.<string.*>} kwargs form options.
  */
 var BaseForm = Concur.extend({
   constructor: function BaseForm(kwargs) {
@@ -2003,25 +2219,19 @@ var BaseForm = Concur.extend({
       emptyPermitted: false, validation: 'manual', controlled: false,
       onStateChange: null
     }, kwargs)
-    this.isBound = (kwargs.data !== null || kwargs.files !== null)
+    this.isInitialRender = (kwargs.data === null && kwargs.files === null)
     this.data = kwargs.data || {}
     this.files = kwargs.files || {}
     this.autoId = kwargs.autoId
     this.prefix = kwargs.prefix
     this.initial = kwargs.initial || {}
+    this.cleanedData = {}
     this.errorConstructor = kwargs.errorConstructor
     this.labelSuffix = kwargs.labelSuffix
     this.emptyPermitted = kwargs.emptyPermitted
-    this.validation = kwargs.validation
+    this.validation = util.normaliseValidation(kwargs.validation)
     this.controlled = kwargs.controlled
     this.onStateChange = kwargs.onStateChange
-
-    // Normalise validation config to an object if it's not set to manual
-    if (is.String(this.validation) && this.validation != 'manual') {
-      this.validation = (this.validation == 'auto'
-                         ? {event: 'onChange', delay: 250}
-                         : {event: this.validation})
-    }
 
     this._errors = null
     this._changedData = null
@@ -2041,51 +2251,79 @@ var BaseForm = Concur.extend({
           'Forms must be given an onStateChange callback when they, or any of ' +
           'their fields, are controlled or use interactive validation.')
       }
-      // isBound will flip to true as soon as the first field is validated. At
-      // that point, rendering will flip to using form.data as its source, so
-      // ensure data has a copy of any initial data that's been configured.
-      if (!this.isBound) {
-        var initialData = object.extend(this._fieldInitialData(), this.initial)
-        var initialFields = Object.keys(initialData)
-        for (var i = 0, l = initialFields.length; i < l; i++) {
-          var fieldName = initialFields[i]
-          if (typeof this.fields[fieldName] == 'undefined') { continue }
-          // Don't copy initial to input data for fields which can't have the
-          // initial data set as their current value.
-          if (!this.fields[fieldName].widget.isValueSettable) { continue }
-          this.data[this.addPrefix(fieldName)] = initialData[fieldName]
-        }
+      // If we're doing an initial render (as opposed to rendering input data),
+      // copy initial values to the data object, as it represents form input -
+      // literally so in the case of controlled components once we start taking
+      // some data and isInitialRender flips to false.
+      if (this.isInitialRender) {
+        this._copyInitialToData()
       }
     }
   }
 })
 
-// ========================================================= Data mutability ===
+// ========================================================= Form mutability ===
 
 /**
- * Resets validation state, replaces the form's input data (and flips its bound
- * flag if necessary) and revalidates, returning the result of isValid().
- * @param {Object.<string,*>} data new input data for the form.
- * @retun {boolean} true if the new data is valid.
+ * Resets a form data back to its initial state, optionally providing new intial
+ * data.
+ * @param {Object.<string,*>=} newInitial new initial data for the form.
  */
-BaseForm.prototype.setData = function(data, kwargs) {
-  kwargs = object.extend({prefixed: false}, kwargs)
+BaseForm.prototype.reset = function(newInitial) {
+  this._cancelPendingFieldValidations()
+  if (typeof newInitial != 'undefined') {
+    this.initial = newInitial
+  }
+  this.data = {}
+  delete this.cleanedData
+  this.isInitialRender = true
   this._errors = null
   this._changedData = null
-  this.data = (kwargs.prefixed ? data : this._prefixData(data))
-  if (!this.isBound) {
-    this.isBound = true
-  }
-  // This call ultimately triggers a fullClean() because _errors is null
-  var isValid = this.isValid()
+  this._copyInitialToData()
   if (typeof this.onStateChange == 'function') {
     this.onStateChange()
   }
-  return isValid
 }
 
 /**
- * Updates some of the form's input data, then optionally triggers validation of
+ * Sets the form's entire input data, also triggering validation by default.
+ * @param {Object.<string,*>} data new input data for the form.
+ * @param {Object.<string,boolean>} kwargs data setting options.
+ * @retun {boolean} if data setting options indicate the new data should be
+ *   validated, true if the new data is valid.
+ */
+BaseForm.prototype.setData = function(data, kwargs) {
+  kwargs = object.extend({
+    prefixed: false, validate: true, _triggerStateChange: true
+  }, kwargs)
+
+  this._changedData = null
+  this.data = (kwargs.prefixed ? data : this._prefixData(data))
+
+  if (this.isInitialRender) {
+    this.isInitialRender = false
+  }
+  if (kwargs.validate) {
+    this._errors = null
+    // This call ultimately triggers a fullClean() because _errors is null
+    var isValid = this.isValid()
+  }
+  else {
+    // Prevent validation being triggered if errors() is accessed during render
+    this._errors = new ErrorObject()
+  }
+
+  if (kwargs._triggerStateChange && typeof this.onStateChange == 'function') {
+    this.onStateChange()
+  }
+
+  if (kwargs.validate) {
+    return isValid
+  }
+}
+
+/**
+ * Updates some of the form's input data, optionally triggering validation of
  * updated fields and form-wide cleaning, or clears existing errors from the
  * updated fields.
  * @param {Object.<string,*>} data updated input data for the form.
@@ -2095,8 +2333,8 @@ BaseForm.prototype.updateData = function(data, kwargs) {
   kwargs = object.extend({prefixed: false, validate: true, clearValidation: true}, kwargs)
   this._changedData = null
   object.extend(this.data, (kwargs.prefixed ? data : this._prefixData(data)))
-  if (!this.isBound) {
-    this.isBound = true
+  if (this.isInitialRender) {
+    this.isInitialRender = false
   }
 
   var fields = Object.keys(data)
@@ -2120,7 +2358,8 @@ BaseForm.prototype.updateData = function(data, kwargs) {
 
 /**
  * Validates the given HTML form's data.
- * @param form the <form> containing this form's rendered widgets.
+ * @param form the <form> containing this form's rendered widgets - this can be
+ *   a React <form> component or a real <form> DOM node.
  * @return {boolean} true if the form's data is valid.
  */
 BaseForm.prototype.validate = function(form) {
@@ -2132,11 +2371,28 @@ BaseForm.prototype.validate = function(form) {
 }
 
 /**
+ * Copies initial data to the input data object, as it represents form input -
+ * when using controlled components once we start taking some data,
+ * isInitialRender flips to false and this.data is used for rendering widgets.
+ */
+BaseForm.prototype._copyInitialToData = function() {
+  var initialData = object.extend(this._fieldInitialData(), this.initial)
+  var initialFieldNames = Object.keys(initialData)
+  for (var i = 0, l = initialFieldNames.length; i < l; i++) {
+    var fieldName = initialFieldNames[i]
+    if (typeof this.fields[fieldName] == 'undefined') { continue }
+    // Don't copy initial to input data for fields which can't have the
+    // initial data set as their current value.
+    if (!this.fields[fieldName].widget.isValueSettable) { continue }
+    this.data[this.addPrefix(fieldName)] = initialData[fieldName]
+  }
+}
+
+/**
  * Removes any cleanedData present for the given form fields.
  * @param {Array.<string>} form field names.
  */
 BaseForm.prototype._removeCleanedData = function(fields) {
-  if (typeof this.cleanedData == 'undefined') { return }
   for (var i = 0, l = fields.length; i < l; i++) {
     delete this.cleanedData[fields[i]]
   }
@@ -2153,7 +2409,7 @@ BaseForm.prototype.boundField = function(name) {
   if (!object.hasOwn(this.fields, name)) {
     throw new Error("Form does not have a '" + name + "' field.")
   }
-  return BoundField(this, this.fields[name], name)
+  return new BoundField(this, this.fields[name], name)
 }
 
 /**
@@ -2171,16 +2427,16 @@ BaseForm.prototype.boundFields = function(test) {
   for (var name in this.fields) {
     if (object.hasOwn(this.fields, name) &&
         test(this.fields[name], name) === true) {
-      fields.push(BoundField(this, this.fields[name], name))
+      fields.push(new BoundField(this, this.fields[name], name))
     }
   }
   return fields
 }
 
 /**
- * Like boundFields, but returns a name -> BoundField object instead.
- * @param {function(Field,string)=} test
- * @type {Object.<string,BoundField>}
+ * Like boundFields(), but returns a name -> BoundField object instead.
+ * @param {function(Field,string)=} test as per boundFields().
+ * @return {Object.<string,BoundField>}
  */
 BaseForm.prototype.boundFieldsObj = function(test) {
   test = test || function() { return true }
@@ -2189,7 +2445,7 @@ BaseForm.prototype.boundFieldsObj = function(test) {
   for (var name in this.fields) {
     if (object.hasOwn(this.fields, name) &&
         test(this.fields[name], name) === true) {
-      fields[name] = BoundField(this, this.fields[name], name)
+      fields[name] = new BoundField(this, this.fields[name], name)
     }
   }
   return fields
@@ -2289,11 +2545,30 @@ BaseForm.prototype.errors = function(name) {
 }
 
 /**
+ * Determines whether or not all required fields have been completed.
+ * @return {boolean}
+ */
+BaseForm.prototype.isComplete = function() {
+  if (!this.isValid()) {
+    return false
+  }
+  var fieldNames = Object.keys(this.fields)
+  for (var i = 0, l = fieldNames.length; i < l; i++) {
+    var fieldName = fieldNames[i]
+    if (this.fields[fieldName].required &&
+        typeof this.cleanedData[fieldName] == 'undefined') {
+      return false
+    }
+  }
+  return true
+}
+
+/**
  * Determines whether or not the form has errors.
  * @return {boolean}
  */
 BaseForm.prototype.isValid = function() {
-  if (!this.isBound) {
+  if (this.isInitialRender) {
     return false
   }
   return !this.errors().isPopulated()
@@ -2315,7 +2590,7 @@ BaseForm.prototype.nonFieldErrors = function() {
  * @return {Array.<string>} a list of changed field names.
  */
 BaseForm.prototype.changedData = function() {
-  if (!env.browser && this._changedData != null) { return this._changedData }
+  if (this._changedData != null) { return this._changedData }
   var changedData = []
   var initialValue
   // XXX: For now we're asking the individual fields whether or not
@@ -2353,7 +2628,7 @@ BaseForm.prototype.changedData = function() {
       changedData.push(name)
     }
   }
-  if (!env.browser) { this._changedData = changedData }
+  this._changedData = changedData
   return changedData
 }
 
@@ -2398,8 +2673,8 @@ BaseForm.prototype.clean = function() {
  * Cleans data for all fields and triggers cross-form cleaning.
  */
 BaseForm.prototype.fullClean = function() {
-  this._errors = ErrorObject()
-  if (!this.isBound) {
+  this._errors = new ErrorObject()
+  if (this.isInitialRender) {
     return // Stop further processing
   }
 
@@ -2423,9 +2698,6 @@ BaseForm.prototype.fullClean = function() {
  */
 BaseForm.prototype.partialClean = function(fields) {
   this._removeErrors(fields)
-  if (typeof this.cleanedData == 'undefined') {
-    this.cleanedData = {}
-  }
 
   // If the form is permitted to be empty, and none of the form data has
   // changed from the initial data, short circuit any validation.
@@ -2548,38 +2820,40 @@ BaseForm.prototype._removeErrors = function(fields) {
 // ==================================== onChange & validation event handling ===
 
 /**
- * This will always be hooked up to a wiget's onChange to ensure form.data is
- * kept up-to-date. Since we're here anyway, we can deal with onChange
- * validation too.
+ * Cancels any pending field validations.
  */
-BaseForm.prototype._handleFieldChange = function(e, validation) {
+BaseForm.prototype._cancelPendingFieldValidations = function() {
+  Object.keys(this._pendingFieldValidation).forEach(function(field) {
+    this._pendingFieldValidation[field].cancel()
+  }.bind(this))
+}
+
+/**
+ * Updates form.data with the current value of the field which is the target of
+ * the given event.
+ * @param {SyntheticEvent} e the event being handled.
+ */
+BaseForm.prototype._updateFieldInputData = function(e) {
   // Get the data from the form element(s) in the DOM
   var htmlName = e.target.name
   var data = util.fieldData(e.target.form, htmlName)
 
   // Keep data up-to-date
-  if (!this.isBound) {
-    this.isBound = true
-  }
   this.data[htmlName] = data
-  this.onStateChange()
-
-  // If we should be validating now, do so
-  if (validation.event == 'onChange') {
-    this._handleFieldValidation(e, validation)
+  if (this.isInitialRender) {
+    this.isInitialRender = false
+  }
+  if (this.controlled) {
+    this.onStateChange()
   }
 }
 
 /**
- * Handles validating the field which is the target of the given event based
- * on its validation config. This will be hooked up to the appropriate event
- * as per the field's validation config. React special cases onChange to ensure
- * the controlled value is kept up to date, so we should be sure that the date
- * we'll be validating against is current.
+ * Validates the field which is the target of the given event.
+ * @param {Object} validation the field's validation config.
+ * @param {SyntheticEvent} e the event being handled.
  */
-BaseForm.prototype._handleFieldValidation = function(e, validation) {
-  // Special case for fields whose widget names aren't the same as their form
-  // field name.
+BaseForm.prototype._validateField = function(validation, e) {
   var field = this.removePrefix(e.target.getAttribute('data-newforms-field') ||
                                 e.target.name)
   if (validation.delay) {
@@ -2591,18 +2865,53 @@ BaseForm.prototype._handleFieldValidation = function(e, validation) {
 }
 
 /**
- * Validates a single field and notifies the React component that state has
- * changed.
+ * This will always be hooked up to a wiget's onChange to ensure form.data is
+ * kept up-to-date for controlled forms. Since we're here anyway, we can deal
+ * with onChange validation too.
+ * @param {Object} validation the field's validation config.
+ * @param {SyntheticEvent} e the onChange event.
+ */
+BaseForm.prototype._handleFieldChange = function(validation, e) {
+  if (validation.onChange) {
+    this._handleFieldValidation({event: 'onChange', delay: validation.onChangeDelay}, e)
+  }
+  else {
+    this._updateFieldInputData(e)
+  }
+}
+
+/**
+ * Handles validating the field which is the target of the given event based
+ * on its validation config. This will be hooked up to the appropriate event
+ * as per the field's validation config.
+ * @param {Object} validation the field's validation config.
+ * @param {SyntheticEvent} e the event being handled.
+ */
+BaseForm.prototype._handleFieldValidation = function(validation, e) {
+  this._updateFieldInputData(e)
+  this._validateField(validation, e)
+}
+
+/**
+ * Validates a field and notifies the React component that state has changed.
+ * @param {string} field a field name.
  */
 BaseForm.prototype._immediateFieldValidation = function(field) {
+  // Cancel and remove any pending validation for the field to avoid doubling up
+  // on validation when both delayed and immediate validation are configured.
+  if (typeof this._pendingFieldValidation[field] != 'undefined') {
+    this._pendingFieldValidation[field].cancel()
+    delete this._pendingFieldValidation[field]
+  }
   this.partialClean([field])
   this.onStateChange()
 }
 
 /**
- * Sets up delayed validation of a single field with a debounced function and
- * calls it, or just calls the function again if it already exists to reset the
- * delay.
+ * Sets up delayed validation of a field with a debounced function and calls it,
+ * or just calls the function again if it already exists to reset the delay.
+ * @param {string} field a field name.
+ * @param {number} delay delay time in ms.
  */
 BaseForm.prototype._delayedFieldValidation = function(field, delay) {
   if (!is.Function(this._pendingFieldValidation[field])) {
@@ -2618,6 +2927,8 @@ BaseForm.prototype._delayedFieldValidation = function(field, delay) {
 
 /**
  * Adds an initial prefix for checking dynamic initial values.
+ * @param {string} fieldName a field name.
+ * @return {string}
  */
 BaseForm.prototype.addInitialPrefix = function(fieldName) {
   return 'initial-' + this.addPrefix(fieldName)
@@ -2628,6 +2939,7 @@ BaseForm.prototype.addInitialPrefix = function(fieldName) {
  * @param {string} fieldName a form field name.
  * @return {string} the field name with a prefix prepended if this form has a
  *   prefix set, otherwise the field name as-is.
+ * @return {string}
  */
 BaseForm.prototype.addPrefix = function(fieldName) {
   if (this.prefix !== null) {
@@ -2639,6 +2951,8 @@ BaseForm.prototype.addPrefix = function(fieldName) {
 /**
  * Returns the field with a prefix-size chunk chopped off the start if this
  * form has a prefix set and the field name starts with it.
+ * @param {string} fieldName a field name.
+ * @return {string}
  */
 BaseForm.prototype.removePrefix = function(fieldName) {
   if (this.prefix !== null && fieldName.indexOf(this.prefix === 0)) {
@@ -2648,6 +2962,23 @@ BaseForm.prototype.removePrefix = function(fieldName) {
 }
 
 // ========================================================= Misc. internals ===
+
+/**
+ * Creates a version of the given data object with prefixxes removed from the
+ * property names if this form has a prefix, otherwise returns the object
+ * itself.
+ * @param {Object.<string,*>} data
+ * @return {Object.<string,*>}
+ */
+BaseForm.prototype._deprefixData = function(data) {
+  if (this.prefix === null) { return data }
+  var prefixedData = {}
+  var fieldNames = Object.keys(data)
+  for (var i = 0, l = fieldNames.length; i < l; i++) {
+    prefixedData[this.removePrefix(fieldNames[i])] = data[fieldNames[i]]
+  }
+  return prefixedData
+}
 
 /**
  * Gets initial data configured in this form's fields.
@@ -2668,7 +2999,7 @@ BaseForm.prototype._fieldInitialData = function() {
 
 /**
  * Tries to construct a display name for the form for display im error messages.
- * @type {string}
+ * @return {string}
  */
 BaseForm.prototype._formName = function() {
   return (this.constructor.name ? "'" + this.constructor.name + "'" : 'Form')
@@ -2679,11 +3010,13 @@ BaseForm.prototype._formName = function() {
  *   validation configured, or are configured to generate controlled components.
  */
 BaseForm.prototype._needsOnStateChange = function() {
-  if (this.validation !== 'manual' || this.controlled === true) { return true }
-  for (var name in this.fields) {
-    if (!object.hasOwn(this.fields, name)) { continue }
-    var field = this.fields[name]
-    if (field.controlled === true || (field.validation !== null &&
+  if (this.controlled === true || this.validation && this.validation !== 'manual') {
+    return true
+  }
+  var names = Object.keys(this.fields)
+  for (var i = 0, l = names.length; i < l; i++) {
+    var field = this.fields[names[i]]
+    if (field.controlled === true || (field.validation &&
                                       field.validation !== 'manual')) {
       return true
     }
@@ -2692,8 +3025,9 @@ BaseForm.prototype._needsOnStateChange = function() {
 }
 
 /**
- * Return a version of the given data object with prefixes added to the property
- * names if this form has a prefix, otherwise returns the object itself.
+ * Creates a version of the given data object with prefixes added to the
+ * property names if this form has a prefix, otherwise returns the objec
+ * itself.
  * @param {Object.<string,*>} data
  * @return {Object.<string,*>}
  */
@@ -2720,12 +3054,17 @@ BaseForm.prototype._rawValue = function(fieldName) {
 
 // ======================================================= Default rendering ===
 
+/**
+ * Default render method, which just calls asTable().
+ * @return {Array} React.DOM components
+ */
 BaseForm.prototype.render = function() {
   return this.asTable()
 }
 
 /**
  * Returns this form rendered as HTML <tr>s - excluding the <table>.
+ * @return {Array} React.DOM components
  */
 BaseForm.prototype.asTable = (function() {
   function normalRow(key, cssClasses, label, field, helpText, errors, extraContent) {
@@ -2761,11 +3100,13 @@ BaseForm.prototype.asTable = (function() {
 
 /**
  * Returns this form rendered as HTML <li>s - excluding the <ul>.
+ * @return {Array} React.DOM components
  */
 BaseForm.prototype.asUl = _singleElementRow(React.DOM.li)
 
 /**
  * Returns this form rendered as HTML <div>s.
+ * @return {Array} React.DOM components
  */
 BaseForm.prototype.asDiv = _singleElementRow(React.DOM.div)
 
@@ -2773,7 +3114,7 @@ BaseForm.prototype.asDiv = _singleElementRow(React.DOM.div)
  * Helper function for outputting HTML.
  * @param {Function} normalRow a function which produces a normal row.
  * @param {Function} errorRow a function which produces an error row.
- * @return a list of React.DOM components representing rows.
+ * @return {Array} React.DOM components
  */
 BaseForm.prototype._htmlOutput = function(normalRow, errorRow) {
   var bf
@@ -2882,6 +3223,8 @@ function _singleElementRow(reactEl) {
  * Meta function for handling declarative fields and inheriting fields from
  * forms further up the inheritance chain or being explicitly mixed-in, which
  * sets up baseFields and declaredFields on a new Form constructor's prototype.
+ * @param {Object.<string,*>} prototypeProps
+ * @param {Object.<string,*>=} constructorProps
  */
 function DeclarativeFieldsMeta(prototypeProps, constructorProps) {
   // Pop Fields instances from prototypeProps to build up the new form's own
@@ -2958,6 +3301,12 @@ function DeclarativeFieldsMeta(prototypeProps, constructorProps) {
   prototypeProps.declaredFields = declaredFields
 }
 
+/**
+ * Base constructor which acts as the user API for craeting new form
+ * constructors, extending BaseForm and registering DeclarativeFieldsMeta as
+ * its __meta__ function to handle setting up new form contructor prototypes.
+ * @constructor
+ */
 var Form = BaseForm.extend({
   __meta__: DeclarativeFieldsMeta
 , constructor: function Form() {
@@ -2967,13 +3316,12 @@ var Form = BaseForm.extend({
 
 module.exports = {
   NON_FIELD_ERRORS: NON_FIELD_ERRORS
-, BoundField: BoundField
 , BaseForm: BaseForm
 , DeclarativeFieldsMeta: DeclarativeFieldsMeta
 , Form: Form
 }
 
-},{"./env":1,"./fields":2,"./util":7,"./widgets":8,"Concur":9,"isomorph/copy":11,"isomorph/format":12,"isomorph/is":13,"isomorph/object":14,"validators":19}],5:[function(_dereq_,module,exports){
+},{"./BoundField":1,"./ErrorList":2,"./ErrorObject":3,"./fields":5,"./util":10,"Concur":12,"isomorph/copy":14,"isomorph/is":16,"isomorph/object":17,"validators":22}],8:[function(_dereq_,module,exports){
 'use strict';
 
 var Concur = _dereq_('Concur')
@@ -2981,24 +3329,23 @@ var object = _dereq_('isomorph/object')
 var validators = _dereq_('validators')
 
 var env = _dereq_('./env')
-var util = _dereq_('./util')
-var widgets = _dereq_('./widgets')
 var fields = _dereq_('./fields')
 var forms = _dereq_('./forms')
+var widgets = _dereq_('./widgets')
+var ErrorList = _dereq_('./ErrorList')
 
-var ErrorList = util.ErrorList
-var ValidationError = validators.ValidationError
-var IntegerField = fields.IntegerField
 var BooleanField = fields.BooleanField
 var HiddenInput = widgets.HiddenInput
+var IntegerField = fields.IntegerField
+var ValidationError = validators.ValidationError
 
 // Special field names
-var TOTAL_FORM_COUNT = 'TOTAL_FORMS'
-var INITIAL_FORM_COUNT = 'INITIAL_FORMS'
-var MIN_NUM_FORM_COUNT = 'MIN_NUM_FORMS'
-var MAX_NUM_FORM_COUNT = 'MAX_NUM_FORMS'
-var ORDERING_FIELD_NAME = 'ORDER'
 var DELETION_FIELD_NAME = 'DELETE'
+var INITIAL_FORM_COUNT = 'INITIAL_FORMS'
+var MAX_NUM_FORM_COUNT = 'MAX_NUM_FORMS'
+var MIN_NUM_FORM_COUNT = 'MIN_NUM_FORMS'
+var ORDERING_FIELD_NAME = 'ORDER'
+var TOTAL_FORM_COUNT = 'TOTAL_FORMS'
 
 // Default minimum number of forms in a formset
 var DEFAULT_MIN_NUM = 0
@@ -3036,7 +3383,7 @@ var BaseFormSet = Concur.extend({
       initial: null, errorConstructor: ErrorList, managementFormCssClass: null,
       validation: 'manual', controlled: false, onStateChange: null
     }, kwargs)
-    this.isBound = kwargs.data !== null || kwargs.files !== null
+    this.isInitialRender = (kwargs.data === null && kwargs.files === null)
     this.prefix = kwargs.prefix || this.getDefaultPrefix()
     this.autoId = kwargs.autoId
     this.data = kwargs.data || {}
@@ -3054,19 +3401,43 @@ var BaseFormSet = Concur.extend({
 })
 
 /**
- * Resets validation state, updates the formset's input data (and bound status
- * if necessary) and revalidates, returning the result of isValid().
- * @param {Object.<string, *} data new input data for the formset.
- * @retun {boolean} true if the new data is valid.
+ * Sets the formset's entire input data, also triggering validation by default.
+ * @param {Object.<string,*>} data new input data for forma, which must be
+ *   prefixed for uniqueness.
+ * @param {Object.<string,boolean>} kwargs data setting options.
+ * @retun {boolean} if date setting options indicate the new data should be
+ *   validated, true if the new data is valid.
  */
-BaseFormSet.prototype.setData = function(data) {
-  this._errors = null
+BaseFormSet.prototype.setData = function(data, kwargs) {
+  kwargs = object.extend({validate: true}, kwargs)
+
   this.data = data
-  if (!this.isBound) {
-    this.isBound = true
+  var formDataSettingOptiona = {
+    prefixed: true, validate: kwargs.validate, _triggerStateChange: false
   }
-  this.forms().map(function(form) { form.setData(data) })
-  return this.isValid()
+  this.forms().map(function(form) {form.setData(data, formDataSettingOptiona) })
+
+  if (this.isInitialRender) {
+    this.isInitialRender = false
+  }
+  if (kwargs.validate) {
+    this._errors = null
+    // This call ultimately triggers a fullClean() because _errors is null
+    var isValid = this.isValid()
+  }
+  else {
+    // Prevent validation being triggered if errors() is accessed during render
+    this._errors = []
+    this._nonFormErrors = new this.errorConstructor()
+  }
+
+  if (typeof this.onStateChange == 'function') {
+    this.onStateChange()
+  }
+
+  if (kwargs.validate) {
+    return isValid
+  }
 }
 
 /**
@@ -3076,7 +3447,7 @@ BaseFormSet.prototype.setData = function(data) {
  */
 BaseFormSet.prototype.managementForm = function() {
   var form
-  if (!env.browser && this.isBound) {
+  if (!env.browser && !this.isInitialRender) {
     form = new ManagementForm({data: this.data, autoId: this.autoId,
                                prefix: this.prefix})
     if (!form.isValid()) {
@@ -3105,7 +3476,7 @@ BaseFormSet.prototype.managementForm = function() {
  * either submitted management data or initial configuration, as appropriate.
  */
 BaseFormSet.prototype.totalFormCount = function() {
-  if (!env.browser && this.isBound) {
+  if (!env.browser && !this.isInitialRender) {
     // Return absoluteMax if it is lower than the actual total form count in
     // the data; this is DoS protection to prevent clients  from forcing the
     // server to instantiate arbitrary numbers of forms.
@@ -3135,7 +3506,7 @@ BaseFormSet.prototype.totalFormCount = function() {
  * on either submitted management data or initial configuration, as appropriate.
  */
 BaseFormSet.prototype.initialFormCount = function() {
-  if (!env.browser && this.isBound) {
+  if (!env.browser && !this.isInitialRender) {
     return this.managementForm().cleanedData[INITIAL_FORM_COUNT]
   }
   else {
@@ -3184,7 +3555,7 @@ BaseFormSet.prototype._constructForm = function(i) {
   , controlled: this.controlled
   , onStateChange: this.onStateChange
   }
-  if (this.isBound) {
+  if (!this.isInitialRender) {
     defaults.data = this.data
     defaults.files = this.files
   }
@@ -3232,10 +3603,6 @@ BaseFormSet.prototype.emptyForm = function() {
  * Returns a list of form.cleanedData objects for every form in this.forms().
  */
 BaseFormSet.prototype.cleanedData = function() {
-  if (!this.isValid()) {
-    throw new Error(this.constructor.name +
-                    " object has no attribute 'cleanedData'")
-  }
   return this.forms().map(function(form) { return form.cleanedData })
 }
 
@@ -3364,7 +3731,7 @@ BaseFormSet.prototype._shouldDeleteForm = function(form) {
  * Returns true if every form in this.forms() is valid.
  */
 BaseFormSet.prototype.isValid = function() {
-  if (!this.isBound) { return false }
+  if (this.isInitialRender) { return false }
 
   // We loop over every form.errors here rather than short circuiting on the
   // first failure to make sure validation gets triggered for every form.
@@ -3394,7 +3761,7 @@ BaseFormSet.prototype.fullClean = function() {
   this._errors = []
   this._nonFormErrors = new this.errorConstructor()
 
-  if (!this.isBound) {
+  if (this.isInitialRender) {
     return // Stop further processing
   }
 
@@ -3581,54 +3948,39 @@ module.exports = {
 , allValid: allValid
 }
 
-},{"./env":1,"./fields":2,"./forms":4,"./util":7,"./widgets":8,"Concur":9,"isomorph/object":14,"validators":19}],6:[function(_dereq_,module,exports){
+},{"./ErrorList":2,"./env":4,"./fields":5,"./forms":7,"./widgets":11,"Concur":12,"isomorph/object":17,"validators":22}],9:[function(_dereq_,module,exports){
 'use strict';
 
 var object = _dereq_('isomorph/object')
 var validators = _dereq_('validators')
 
 var env = _dereq_('./env')
-var util = _dereq_('./util')
-var formats = _dereq_('./formats')
-var widgets = _dereq_('./widgets')
 var fields = _dereq_('./fields')
+var formats = _dereq_('./formats')
 var forms = _dereq_('./forms')
 var formsets = _dereq_('./formsets')
+var util = _dereq_('./util')
+var widgets = _dereq_('./widgets')
 
-object.extend(
-  module.exports
-, { env: env
-  , ValidationError: validators.ValidationError
-  , ErrorObject: util.ErrorObject
-  , ErrorList: util.ErrorList
-  , formData: util.formData
-  , util: {
-      fieldData: util.fieldData
-    , formatToArray: util.formatToArray
-    , makeChoices: util.makeChoices
-    , prettyName: util.prettyName
-    }
-  , formats: formats
-  , validators: validators
-  }
-, widgets
-, fields
-, forms
-, formsets
-)
+var ErrorList = _dereq_('./ErrorList')
+var ErrorObject = _dereq_('./ErrorObject')
 
-},{"./env":1,"./fields":2,"./formats":3,"./forms":4,"./formsets":5,"./util":7,"./widgets":8,"isomorph/object":14,"validators":19}],7:[function(_dereq_,module,exports){
+module.exports = object.extend({
+  env: env
+, ErrorList: ErrorList
+, ErrorObject: ErrorObject
+, formats: formats
+, formData: util.formData
+, util: util
+, ValidationError: validators.ValidationError
+, validators: validators
+}, fields, forms, formsets, widgets)
+
+},{"./ErrorList":2,"./ErrorObject":3,"./env":4,"./fields":5,"./formats":6,"./forms":7,"./formsets":8,"./util":10,"./widgets":11,"isomorph/object":17,"validators":22}],10:[function(_dereq_,module,exports){
 'use strict';
 
-var Concur = _dereq_('Concur')
 var is = _dereq_('isomorph/is')
 var object = _dereq_('isomorph/object')
-var validators = _dereq_('validators')
-var React = (window.React)
-
-var ValidationError = validators.ValidationError
-
-var slice = Array.prototype.slice
 
 /**
  * Replaces String {placeholders} with properties of a given object, but
@@ -3669,17 +4021,6 @@ function makeChoices(list, valueProp, labelProp) {
   return list.map(function(item) {
     return [maybeCall(item, valueProp), maybeCall(item, labelProp)]
   })
-}
-
-/**
- * A version of bind which passes any extra arguments *after* the eventual
- * function call's own arguments.
- */
-function bindRight(func, context) {
-  var partials = slice.call(arguments, 2)
-  return function() {
-    return func.apply(context, slice.call(arguments).concat(partials))
-  }
 }
 
 /**
@@ -3730,6 +4071,58 @@ function normaliseChoices(choices) {
     }
   }
   return normalisedChoices
+}
+
+/**
+ * @param {Array.<string>} events
+ */
+function normaliseValidationEvents(events) {
+  events = events.map(function(event) {
+    if (event.indexOf('on') === 0) { return event }
+    return 'on' + event.charAt(0).toUpperCase() + event.substr(1)
+  })
+  var onChangeIndex = events.indexOf('onChange')
+  if (onChangeIndex != -1) {
+    events.splice(onChangeIndex, 1)
+  }
+  return {events: events, onChange: (onChangeIndex != -1)}
+}
+
+/**
+ * @param {string} events
+ */
+function normaliseValidatonString(events) {
+  return normaliseValidationEvents(strip(events).split(/ +/g))
+}
+
+/**
+ * @param {(string|Object)} validation
+ */
+function normaliseValidation(validation) {
+  if (!validation || validation === 'manual') {
+    return validation
+  }
+  else if (validation === 'auto') {
+    return {events: ['onBlur'], onChange: true, onChangeDelay: 369}
+  }
+  else if (is.String(validation)) {
+    return normaliseValidatonString(validation)
+  }
+  else if (is.Object(validation)) {
+    var normalised
+    if (is.String(validation.on)) {
+      normalised = normaliseValidatonString(validation.on)
+    }
+    else if (is.Array(validation.on)) {
+      normalised = normaliseValidationEvents(validation.on)
+    }
+    else {
+      throw new Error("Validation config Objects must have an 'on' String or Array")
+    }
+    normalised.onChangeDelay = object.get(validation, 'onChangeDelay', validation.delay)
+    return normalised
+  }
+  throw new Error('Unexpected validation config: ' + validation)
 }
 
 /**
@@ -3897,10 +4290,13 @@ var strip = function() {
  * be triggered. The function will be called after it stops being called for
  * N milliseconds. If `immediate` is passed, trigger the function on the
  * leading edge, instead of the trailing.
+ *
+ * Modified to give the returned function a .cancel() function which can be used
+ * to prevent the debounced functiom being called.
  */
 function debounce(func, wait, immediate) {
   var timeout, args, context, timestamp, result
-  return function() {
+  var debounced = function() {
     context = this
     args = arguments
     timestamp = new Date()
@@ -3920,204 +4316,31 @@ function debounce(func, wait, immediate) {
     if (callNow) { result = func.apply(context, args) }
     return result
   }
-}
-
-/**
- * A collection of field errors that knows how to display itself in various
- * formats. This object's .error properties are the field names and
- * corresponding values are the errors.
- * @constructor
- */
-var ErrorObject = Concur.extend({
-  constructor: function ErrorObject(errors) {
-    if (!(this instanceof ErrorObject)) { return new ErrorObject(errors) }
-    this.errors = errors || {}
-  }
-})
-
-ErrorObject.prototype.set = function(field, error) {
-  this.errors[field] = error
-}
-
-ErrorObject.prototype.get = function(field) {
-  return this.errors[field]
-}
-
-ErrorObject.prototype.remove = function(fields) {
-  return delete this.errors[fields]
-}
-
-ErrorObject.prototype.removeAll = function(fields) {
-  for (var i = 0, l = fields.length; i < l; i++) {
-    delete this.errors[fields[i]]
-  }
-}
-
-ErrorObject.prototype.hasField = function(field) {
-  return object.hasOwn(this.errors, field)
-}
-
-ErrorObject.prototype.length = function() {
-  return Object.keys(this.errors).length
-}
-
-/**
- * Determines if any errors are present.
- */
-ErrorObject.prototype.isPopulated = function() {
-  return (this.length() > 0)
-}
-
-/**
- * Default display is as a list.
- */
-ErrorObject.prototype.render = function() {
-  return this.asUl()
-}
-
-/**
- * Displays error details as a list.
- */
-ErrorObject.prototype.asUl = function() {
-  var items = Object.keys(this.errors).map(function(field) {
-    return React.DOM.li(null, field, this.errors[field].asUl())
-  }.bind(this))
-  if (items.length === 0) { return }
-  return React.DOM.ul({className: 'errorlist'}, items)
-}
-
-/**
- * Displays error details as text.
- */
-ErrorObject.prototype.asText = ErrorObject.prototype.toString = function() {
-  return Object.keys(this.errors).map(function(field) {
-    var mesages = this.errors[field].messages()
-    return ['* ' + field].concat(mesages.map(function(message) {
-      return ('  * ' + message)
-    })).join('\n')
-  }.bind(this)).join('\n')
-}
-
-ErrorObject.prototype.asData = function() {
-  var data = {}
-  Object.keys(this.errors).map(function(field) {
-    data[field] = this.errors[field].asData()
-  }.bind(this))
-  return data
-}
-
-ErrorObject.prototype.toJSON = function() {
-  var jsonObj = {}
-  Object.keys(this.errors).map(function(field) {
-    jsonObj[field] = this.errors[field].toJSON()
-  }.bind(this))
-  return jsonObj
-}
-
-/**
- * A list of errors which knows how to display itself in various formats.
- * @param {Array=} list a list of errors.
- * @constructor
- */
-var ErrorList = Concur.extend({
-  constructor: function ErrorList(list) {
-    if (!(this instanceof ErrorList)) { return new ErrorList(list) }
-    this.data = list || []
-  }
-})
-
-/**
- * Adds more errors.
- * @param {Array} errorList a list of errors
- */
-ErrorList.prototype.extend = function(errorList) {
-  this.data.push.apply(this.data, errorList)
-}
-
-ErrorList.prototype.length = function() {
-  return this.data.length
-}
-
-/**
- * Determines if any errors are present.
- */
-ErrorList.prototype.isPopulated = function() {
-  return (this.length() > 0)
-}
-
-/**
- * Returns the list of messages held in this ErrorList.
- */
-ErrorList.prototype.messages = function() {
-  var messages = []
-  for (var i = 0, l = this.data.length; i < l; i++) {
-    var error = this.data[i]
-    if (error instanceof ValidationError) {
-      error = error.messages()[0]
+  debounced.cancel = function() {
+    if (timeout) {
+      clearTimeout(timeout)
     }
-    messages.push(error)
   }
-  return messages
+  return debounced
 }
 
-/**
- *  Default display is as a list.
- */
-ErrorList.prototype.render = function() {
-  return this.asUl()
-}
 
-/**
- * Displays errors as a list.
- */
-ErrorList.prototype.asUl = function() {
-  if (!this.isPopulated()) {
-    return
-  }
-  return React.DOM.ul({className: 'errorlist'}
-  , this.messages().map(function(error) {
-      return React.DOM.li(null, error)
-    })
-  )
-}
 
-/**
- * Displays errors as text.
- */
-ErrorList.prototype.asText = ErrorList.prototype.toString =function() {
-  return this.messages().map(function(error) {
-    return '* ' + error
-  }).join('\n')
-}
 
-ErrorList.prototype.asData = function() {
-  return this.data
-}
-
-ErrorList.prototype.toJSON = function() {
-  return ValidationError(this.data).errorList.map(function(error) {
-    return {
-      message: error.messages()[0]
-    , code: error.code || ''
-    }
-  })
-}
 
 module.exports = {
-  ErrorObject: ErrorObject
-, ErrorList: ErrorList
-, formData: formData
+  debounce: debounce
 , fieldData: fieldData
 , formatToArray: formatToArray
+, formData: formData
 , makeChoices: makeChoices
 , normaliseChoices: normaliseChoices
+, normaliseValidation: normaliseValidation
 , prettyName: prettyName
 , strip: strip
-, debounce: debounce
-, bindRight: bindRight
 }
 
-},{"Concur":9,"isomorph/is":13,"isomorph/object":14,"validators":19}],8:[function(_dereq_,module,exports){
+},{"isomorph/is":16,"isomorph/object":17}],11:[function(_dereq_,module,exports){
 'use strict';
 
 var Concur = _dereq_('Concur')
@@ -4427,7 +4650,7 @@ var FileInput = Input.extend({
   }
 , inputType: 'file'
 , needsMultipartForm: true
-, validation: {event: 'onChange'}
+, validation: {onChange: true}
 , isValueSettable: false
 })
 
@@ -4655,7 +4878,7 @@ var CheckboxInput = Widget.extend({
     Widget.call(this, kwargs)
     this.checkTest = kwargs.checkTest
   }
-, validation: {event: 'onChange'}
+, validation: {onChange: true}
 })
 
 CheckboxInput.prototype.render = function(name, value, kwargs) {
@@ -4701,7 +4924,7 @@ var Select = Widget.extend({
     this.choices = util.normaliseChoices(kwargs.choices)
   }
 , allowMultipleSelected: false
-, validation: {event: 'onChange'}
+, validation: {onChange: true}
 })
 
 /**
@@ -4823,7 +5046,7 @@ var SelectMultiple = Select.extend({
     Select.call(this, kwargs)
   }
 , allowMultipleSelected: true
-, validation: {event: 'onChange'}
+, validation: {onChange: true}
 })
 
 /**
@@ -5066,7 +5289,7 @@ var RendererMixin = Concur.extend({
     }
   }
 , _emptyValue: null
-, validation: {event: 'onChange'}
+, validation: {onChange: true}
 })
 
 RendererMixin.prototype.subWidgets = function(name, value, kwargs) {
@@ -5326,7 +5549,7 @@ module.exports = {
 , SplitHiddenDateTimeWidget: SplitHiddenDateTimeWidget
 }
 
-},{"./env":1,"./formats":3,"./util":7,"Concur":9,"isomorph/is":13,"isomorph/object":14,"isomorph/time":15}],9:[function(_dereq_,module,exports){
+},{"./env":4,"./formats":6,"./util":10,"Concur":12,"isomorph/is":16,"isomorph/object":17,"isomorph/time":18}],12:[function(_dereq_,module,exports){
 'use strict';
 
 var is = _dereq_('isomorph/is')
@@ -5454,7 +5677,7 @@ Concur.extend = function(prototypeProps, constructorProps) {
   return childConstructor
 }
 
-},{"isomorph/is":13,"isomorph/object":14}],10:[function(_dereq_,module,exports){
+},{"isomorph/is":16,"isomorph/object":17}],13:[function(_dereq_,module,exports){
 /*! http://mths.be/punycode v1.2.4 by @mathias */
 ;(function(root) {
 
@@ -5963,7 +6186,7 @@ Concur.extend = function(prototypeProps, constructorProps) {
 
 }(this));
 
-},{}],11:[function(_dereq_,module,exports){
+},{}],14:[function(_dereq_,module,exports){
 'use strict';
 
 var is = _dereq_('./is')
@@ -6266,7 +6489,7 @@ module.exports = {
 , deepCopy: deepCopy
 }
 
-},{"./is":13}],12:[function(_dereq_,module,exports){
+},{"./is":16}],15:[function(_dereq_,module,exports){
 'use strict';
 
 var slice = Array.prototype.slice
@@ -6323,7 +6546,7 @@ module.exports = {
 , fileSize: fileSize
 }
 
-},{}],13:[function(_dereq_,module,exports){
+},{}],16:[function(_dereq_,module,exports){
 'use strict';
 
 var toString = Object.prototype.toString
@@ -6391,7 +6614,7 @@ module.exports = {
 , String: isString
 }
 
-},{}],14:[function(_dereq_,module,exports){
+},{}],17:[function(_dereq_,module,exports){
 'use strict';
 
 /**
@@ -6528,7 +6751,7 @@ module.exports = {
 , setDefault: setDefault
 }
 
-},{}],15:[function(_dereq_,module,exports){
+},{}],18:[function(_dereq_,module,exports){
 'use strict';
 
 var is = _dereq_('./is')
@@ -6881,7 +7104,7 @@ time.strftime = function(date, format, locale) {
 
 module.exports = time
 
-},{"./is":13}],16:[function(_dereq_,module,exports){
+},{"./is":16}],19:[function(_dereq_,module,exports){
 'use strict';
 
 // parseUri 1.2.2
@@ -6972,7 +7195,7 @@ module.exports = {
 , makeUri: makeUri
 }
 
-},{}],17:[function(_dereq_,module,exports){
+},{}],20:[function(_dereq_,module,exports){
 'use strict';
 
 var Concur = _dereq_('Concur')
@@ -7135,7 +7358,7 @@ module.exports = {
   ValidationError: ValidationError
 }
 
-},{"Concur":9,"isomorph/format":12,"isomorph/is":13,"isomorph/object":14}],18:[function(_dereq_,module,exports){
+},{"Concur":12,"isomorph/format":15,"isomorph/is":16,"isomorph/object":17}],21:[function(_dereq_,module,exports){
 'use strict';
 
 var object = _dereq_('isomorph/object')
@@ -7419,7 +7642,7 @@ module.exports = {
 , isValidIPv6Address: isValidIPv6Address
 }
 
-},{"./errors":17,"./validators":19,"isomorph/object":14}],19:[function(_dereq_,module,exports){
+},{"./errors":20,"./validators":22,"isomorph/object":17}],22:[function(_dereq_,module,exports){
 'use strict';
 
 var Concur = _dereq_('Concur')
@@ -7765,6 +7988,6 @@ module.exports = {
 , ipv6: ipv6
 }
 
-},{"./errors":17,"./ipv6":18,"Concur":9,"isomorph/is":13,"isomorph/object":14,"isomorph/url":16,"punycode":10}]},{},[6])
-(6)
+},{"./errors":20,"./ipv6":21,"Concur":12,"isomorph/is":16,"isomorph/object":17,"isomorph/url":19,"punycode":13}]},{},[9])
+(9)
 });

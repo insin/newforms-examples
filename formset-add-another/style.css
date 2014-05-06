@@ -1,0 +1,2 @@
+tr.error-row > td > .help-block { margin-bottom: 0; }
+tr.has-non-field-error > td { border-top: 0 !important; }

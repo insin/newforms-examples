@@ -205,9 +205,9 @@ var AddContact = React.createClass({displayName: 'AddContact',
 , onSubmit: function(e) {
     e.preventDefault()
     var data = forms.formData(this.refs.form.getDOMNode())
-    var areContactDetailsValid = all([this.state.phoneNumberForms.setData(data),
-                                      this.state.emailAddressForms.setData(data),
-                                      this.state.addressForms.setData(data)])
+    var areContactDetailsValid = all([this.state.phoneNumberForms.setData(data, {prefixed: true}),
+                                      this.state.emailAddressForms.setData(data, {prefixed: true}),
+                                      this.state.addressForms.setData(data, {prefixed: true})])
     this.props.onSubmit(data, areContactDetailsValid)
   }
 
@@ -299,7 +299,7 @@ var AddPerson = React.createClass({displayName: 'AddPerson',
   }
 
 , onSubmit: function(data, areContactDetailsValid) {
-    var isPersonFormValid = this.state.form.setData(data)
+    var isPersonFormValid = this.state.form.setData(data, {prefixed: true})
     var cleanedData = false
     if (isPersonFormValid && areContactDetailsValid) {
       cleanedData = extend({
@@ -375,8 +375,8 @@ var AddOrganisation = React.createClass({displayName: 'AddOrganisation',
 , addAnother: addAnother
 
 , onSubmit: function(data, areContactDetailsValid) {
-    var isOrgFormValid = this.state.form.setData(data)
-    var arePeopleFormsValid = this.state.peopleForms.setData(data)
+    var isOrgFormValid = this.state.form.setData(data, {prefixed: true})
+    var arePeopleFormsValid = this.state.peopleForms.setData(data, {prefixed: true})
     var cleanedData = false
     if (isOrgFormValid && arePeopleFormsValid && areContactDetailsValid) {
       cleanedData = extend({
@@ -453,7 +453,17 @@ var AddOrganisation = React.createClass({displayName: 'AddOrganisation',
           errors
         )
       })
-      return React.DOM.tr( {key:form.prefix}, cells)
+      var nonFieldErrors = form.nonFieldErrors().messages().map(function(message) {
+        return React.DOM.div( {className:"help-block"}, message)
+      })
+      var nonFieldErrorClass = nonFieldErrors.length > 0 ? 'has-non-field-error' : ''
+      var rows = [React.DOM.tr( {key:form.prefix, className:nonFieldErrorClass}, cells)]
+      if (nonFieldErrors.length > 0) {
+        rows.unshift(React.DOM.tr( {key:form.prefix + '-nonFieldErrors', className:"error-row"}, 
+          React.DOM.td( {colSpan:"6", className:"has-error"}, nonFieldErrors)
+        ))
+      }
+      return rows
     }.bind(this))
   }
 })

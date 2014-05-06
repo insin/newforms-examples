@@ -163,16 +163,12 @@ var ContactFormComponent = React.createClass({displayName: 'ContactFormComponent
 
 , getFormKwargs: function(props, extraKwargs) {
     return extend({
-      validation: {event: 'onChange', delay: 500}
-    , onStateChange: this.onFormStateChange
+      validation: {on: 'change blur', delay: 500}
+    , onStateChange: this.forceUpdate.bind(this)
     , company: props.company
     , email: props.email
     , question: props.question
     }, extraKwargs)
-  }
-
-, onFormStateChange: function() {
-    this.setState({form: this.state.form})
   }
 
 , componentWillReceiveProps: function(nextProps) {
