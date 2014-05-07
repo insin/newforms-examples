@@ -169,23 +169,19 @@ var AddContact = React.createClass({
       phoneNumberForms: new PhoneNumberFormSet({
         prefix: this.prefix('phone')
       , validation: 'auto'
-      , onStateChange: this.onFormStateChange
+      , onStateChange: this.forceUpdate.bind(this)
       })
     , emailAddressForms: new EmailAddressFormSet({
         prefix: this.prefix('email')
       , validation: 'auto'
-      , onStateChange: this.onFormStateChange
+      , onStateChange: this.forceUpdate.bind(this)
       })
     , addressForms: new AddressFormSet({
         prefix: this.prefix('address')
       , validation: 'auto'
-      , onStateChange: this.onFormStateChange
+      , onStateChange: this.forceUpdate.bind(this)
       })
     }
-  }
-
-, onFormStateChange: function() {
-    this.forceUpdate()
   }
 
 , prefix: function(formsetType) {
@@ -204,11 +200,11 @@ var AddContact = React.createClass({
 
 , onSubmit: function(e) {
     e.preventDefault()
-    var data = forms.formData(this.refs.form.getDOMNode())
-    var areContactDetailsValid = all([this.state.phoneNumberForms.setData(data, {prefixed: true}),
-                                      this.state.emailAddressForms.setData(data, {prefixed: true}),
-                                      this.state.addressForms.setData(data, {prefixed: true})])
-    this.props.onSubmit(data, areContactDetailsValid)
+    var formData = forms.formData(this.refs.form)
+    var areContactDetailsValid = all([this.state.phoneNumberForms.setFormData(formData),
+                                      this.state.emailAddressForms.setFormData(formData),
+                                      this.state.addressForms.setFormData(formData)])
+    this.props.onSubmit(formData, areContactDetailsValid)
   }
 
 , render: function() {
@@ -288,18 +284,14 @@ var AddPerson = React.createClass({
       form: new PersonForm({
         prefix: 'person'
       , validation: 'auto'
-      , onStateChange: this.onFormStateChange
+      , onStateChange: this.forceUpdate.bind(this)
       })
     , cleanedData: false
     }
   }
 
-, onFormStateChange: function() {
-    this.forceUpdate()
-  }
-
-, onSubmit: function(data, areContactDetailsValid) {
-    var isPersonFormValid = this.state.form.setData(data, {prefixed: true})
+, onSubmit: function(formData, areContactDetailsValid) {
+    var isPersonFormValid = this.state.form.setFormData(formData)
     var cleanedData = false
     if (isPersonFormValid && areContactDetailsValid) {
       cleanedData = extend({
@@ -357,26 +349,22 @@ var AddOrganisation = React.createClass({
       form: new OrganisationForm({
         prefix: 'org'
       , validation: 'auto'
-      , onStateChange: this.onFormStateChange
+      , onStateChange: this.forceUpdate.bind(this)
       })
     , peopleForms: new InlinePersonFormSet({
         prefix: 'org'
       , validation: 'auto'
-      , onStateChange: this.onFormStateChange
+      , onStateChange: this.forceUpdate.bind(this)
       })
     , cleanedData: false
     }
   }
 
-, onFormStateChange: function() {
-    this.forceUpdate()
-  }
-
 , addAnother: addAnother
 
-, onSubmit: function(data, areContactDetailsValid) {
-    var isOrgFormValid = this.state.form.setData(data, {prefixed: true})
-    var arePeopleFormsValid = this.state.peopleForms.setData(data, {prefixed: true})
+, onSubmit: function(formData, areContactDetailsValid) {
+    var isOrgFormValid = this.state.form.setFormData(formData)
+    var arePeopleFormsValid = this.state.peopleForms.setFormData(formData)
     var cleanedData = false
     if (isOrgFormValid && arePeopleFormsValid && areContactDetailsValid) {
       cleanedData = extend({

@@ -1,5 +1,5 @@
 /**
- * newforms 0.6.0-alpha (dev build at Tue, 06 May 2014 16:59:50 GMT) - https://github.com/insin/newforms
+ * newforms 0.6.0 - https://github.com/insin/newforms
  * MIT Licensed
  */
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.forms=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
@@ -297,20 +297,28 @@ BoundField.prototype.labelTag = function(kwargs) {
  */
 BoundField.prototype.cssClasses = function(extraCssClasses) {
   var cssClasses = extraCssClasses ? [extraCssClasses] : []
+
   if (this.field.cssClass !== null) {
     cssClasses.push(this.field.cssClass)
   }
+
   if (typeof this.form.rowCssClass != 'undefined') {
     cssClasses.push(this.form.rowCssClass)
   }
-  if (this.errors().isPopulated() &&
-      typeof this.form.errorCssClass != 'undefined') {
+
+  if (typeof this.form.validCssClass != 'undefined' &&
+      typeof this.form.cleanedData[this.name] != 'undefined') {
+    cssClasses.push(this.form.validCssClass)
+  }
+  else if (typeof this.form.errorCssClass != 'undefined' &&
+           this.errors().isPopulated()) {
     cssClasses.push(this.form.errorCssClass)
   }
-  if (this.field.required &&
-     typeof this.form.requiredCssClass != 'undefined') {
+
+  if (this.form.requiredCssClass != 'undefined' && this.field.required) {
     cssClasses.push(this.form.requiredCssClass)
   }
+
   return cssClasses.join(' ')
 }
 
@@ -2275,7 +2283,7 @@ BaseForm.prototype.reset = function(newInitial) {
     this.initial = newInitial
   }
   this.data = {}
-  delete this.cleanedData
+  this.cleanedData = {}
   this.isInitialRender = true
   this._errors = null
   this._changedData = null
@@ -2323,6 +2331,14 @@ BaseForm.prototype.setData = function(data, kwargs) {
 }
 
 /**
+ * Sets the form's entire input data wth data extracted from a ``<form>``, which
+ * will be prefixed, if prefixes are being used.
+ */
+BaseForm.prototype.setFormData = function(formData) {
+  return this.setData(formData, {prefixed: true})
+}
+
+/**
  * Updates some of the form's input data, optionally triggering validation of
  * updated fields and form-wide cleaning, or clears existing errors from the
  * updated fields.
@@ -2367,7 +2383,7 @@ BaseForm.prototype.validate = function(form) {
     form = form.getDOMNode()
   }
   var data = util.formData(form)
-  return this.setData(data, {prefixed: true})
+  return this.setFormData(data)
 }
 
 /**
@@ -2825,6 +2841,7 @@ BaseForm.prototype._removeErrors = function(fields) {
 BaseForm.prototype._cancelPendingFieldValidations = function() {
   Object.keys(this._pendingFieldValidation).forEach(function(field) {
     this._pendingFieldValidation[field].cancel()
+    delete this._pendingFieldValidation[field]
   }.bind(this))
 }
 
@@ -2955,7 +2972,7 @@ BaseForm.prototype.addPrefix = function(fieldName) {
  * @return {string}
  */
 BaseForm.prototype.removePrefix = function(fieldName) {
-  if (this.prefix !== null && fieldName.indexOf(this.prefix === 0)) {
+  if (this.prefix !== null && fieldName.indexOf(this.prefix + '-' === 0)) {
       return fieldName.substring(this.prefix.length + 1)
   }
   return fieldName
@@ -3439,6 +3456,11 @@ BaseFormSet.prototype.setData = function(data, kwargs) {
     return isValid
   }
 }
+
+/**
+ * Alias to keep the FormSet data setting API the same as Form's.
+ */
+BaseFormSet.prototype.setFormData = BaseFormSet.prototype.setData
 
 /**
  * Returns the ManagementForm instance for this FormSet.
@@ -3935,7 +3957,7 @@ function allValid(formsets) {
   var valid = true
   for (var i = 0, l = formsets.length; i < l; i++) {
     if (!formsets[i].isValid()) {
-        valid = false
+      valid = false
     }
   }
   return valid
@@ -3972,6 +3994,7 @@ module.exports = object.extend({
 , formats: formats
 , formData: util.formData
 , util: util
+, validateAll: util.validateAll
 , ValidationError: validators.ValidationError
 , validators: validators
 }, fields, forms, formsets, widgets)
@@ -4170,6 +4193,9 @@ function formData(form) {
   if (!form) {
     throw new Error('formData was given form=' + form)
   }
+  if (typeof form.getDOMNode == 'function') {
+    form = form.getDOMNode()
+  }
   var data = {}
 
   for (var i = 0, l = form.elements.length; i < l; i++) {
@@ -4203,6 +4229,9 @@ function fieldData(form, field) {
   /* global NodeList */
   if (!form) {
     throw new Error('fieldData was given form=' + form)
+  }
+  if (form && typeof form.getDOMNode == 'function') {
+    form = form.getDOMNode()
   }
   var data = null
   var element = form.elements[field]
@@ -4324,9 +4353,29 @@ function debounce(func, wait, immediate) {
   return debounced
 }
 
-
-
-
+/**
+ * Extracts data from a <form> and validates it with a list of forms and/or
+ * formsets.
+ * @param form the <form> into which any given forms and formsets have been
+ *   rendered - this can be a React <form> component or a real <form> DOM node.
+ * @param {Array.<(Form|FormSet)>} formsAndFormsets a list of forms and/or
+ *   formsets to be used to validate the <form>'s input data.
+ * @return {boolean} true if the <form>'s input data are valid according to all
+ *   given forms and formsets.
+ */
+function validateAll(form, formsAndFormsets) {
+  if (form && typeof form.getDOMNode == 'function') {
+    form = form.getDOMNode()
+  }
+  var data = formData(form)
+  var isValid = true
+  for (var i = 0, l = formsAndFormsets.length; i < l; i++) {
+    if (!formsAndFormsets[i].setFormData(data)) {
+      isValid = false
+    }
+  }
+  return isValid
+}
 
 module.exports = {
   debounce: debounce
@@ -4338,6 +4387,7 @@ module.exports = {
 , normaliseValidation: normaliseValidation
 , prettyName: prettyName
 , strip: strip
+, validateAll: validateAll
 }
 
 },{"isomorph/is":16,"isomorph/object":17}],11:[function(_dereq_,module,exports){
