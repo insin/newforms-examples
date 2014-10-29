@@ -16,7 +16,7 @@ var STATES = [
 var BootstrapRadioInlineRenderer = forms.RadioFieldRenderer.extend({
   render: function() {
     return this.choiceInputs().map(function(input) {
-      return React.DOM.label( {className:"radio-inline"}, 
+      return React.createElement("label", {className: "radio-inline"}, 
         input.tag(), " ", input.choiceLabel
       )
     })
@@ -71,13 +71,13 @@ var ContactForm = forms.Form.extend({
     var errors = bf.errors()
     var hasErrors = errors.isPopulated()
     var fieldCassName = $c({'form-control': bf.name !== 'currentCustomer'})
-    return React.DOM.div( {key:bf.htmlName, className:$c('form-group', {'has-error': hasErrors})}, 
-      bf.labelTag({attrs: {className: "col-sm-4 control-label"}}),
-      React.DOM.div( {className:"col-sm-4"}, 
+    return React.createElement("div", {key: bf.htmlName, className: $c('form-group', {'has-error': hasErrors})}, 
+      bf.labelTag({attrs: {className: "col-sm-4 control-label"}}), 
+      React.createElement("div", {className: "col-sm-4"}, 
         bf.render({attrs: {className: fieldCassName}})
-      ),
-      React.DOM.div( {className:"col-sm-4 help-text"}, 
-        React.DOM.p( {className:"form-control-static"}, 
+      ), 
+      React.createElement("div", {className: "col-sm-4 help-text"}, 
+        React.createElement("p", {className: "form-control-static"}, 
           hasErrors && errors.messages()[0]
         )
       )
@@ -97,38 +97,38 @@ var Example = React.createClass({displayName: 'Example',
 , render: function() {
     var submitted
     if (this.state.submitted !== null) {
-      submitted = React.DOM.div( {className:"alert alert-success"}, 
-        React.DOM.p(null, "ContactForm data:"),
-        React.DOM.pre(null, React.DOM.code(null, JSON.stringify(this.state.submitted, null, '  ')))
+      submitted = React.createElement("div", {className: "alert alert-success"}, 
+        React.createElement("p", null, "ContactForm data:"), 
+        React.createElement("pre", null, React.createElement("code", null, JSON.stringify(this.state.submitted, null, '  ')))
       )
     }
 
-    return React.DOM.div(null, 
-      React.DOM.div( {className:"panel panel-default"}, 
-        React.DOM.div( {className:"panel-heading clearfix"}, 
-          React.DOM.h3( {className:"panel-title pull-left"}, "Contact Form"),
-          React.DOM.div( {className:"pull-right"}, 
-            React.DOM.label( {className:"checkbox-inline"}, 
-              React.DOM.input( {type:"checkbox",
-                checked:this.state.email,
-                onChange:this.handleChange.bind(this, 'email')}
+    return React.createElement("div", null, 
+      React.createElement("div", {className: "panel panel-default"}, 
+        React.createElement("div", {className: "panel-heading clearfix"}, 
+          React.createElement("h3", {className: "panel-title pull-left"}, "Contact Form"), 
+          React.createElement("div", {className: "pull-right"}, 
+            React.createElement("label", {className: "checkbox-inline"}, 
+              React.createElement("input", {type: "checkbox", 
+                checked: this.state.email, 
+                onChange: this.handleChange.bind(this, 'email')}
               ), " Email"
-            ),
-            React.DOM.label( {className:"checkbox-inline"}, 
-              React.DOM.input( {type:"checkbox",
-                checked:this.state.question,
-                onChange:this.handleChange.bind(this, 'question')}
+            ), 
+            React.createElement("label", {className: "checkbox-inline"}, 
+              React.createElement("input", {type: "checkbox", 
+                checked: this.state.question, 
+                onChange: this.handleChange.bind(this, 'question')}
               ), " Question"
             )
           )
-        ),
-        ContactFormComponent( {ref:"contactForm",
-          email:this.state.email,
-          question:this.state.question,
-          company:this.props.company,
-          onSubmit:this.handleSubmit}
+        ), 
+        React.createElement(ContactFormComponent, {ref: "contactForm", 
+          email: this.state.email, 
+          question: this.state.question, 
+          company: this.props.company, 
+          onSubmit: this.handleSubmit}
         )
-      ),
+      ), 
       submitted
     )
   }
@@ -194,20 +194,20 @@ var ContactFormComponent = React.createClass({displayName: 'ContactFormComponent
   }
 
 , render: function() {
-    return React.DOM.form( {ref:"form", onSubmit:this.onSubmit}, 
-      React.DOM.div( {className:"panel-body"}, 
-        React.DOM.div( {className:"form-horizontal"}, 
+    return React.createElement("form", {ref: "form", onSubmit: this.onSubmit}, 
+      React.createElement("div", {className: "panel-body"}, 
+        React.createElement("div", {className: "form-horizontal"}, 
           this.state.form.render()
         )
-      ),
-      React.DOM.div( {className:"panel-footer"}, 
-        React.DOM.button( {type:"submit", className:"btn btn-primary btn-block"}, "Submit")
+      ), 
+      React.createElement("div", {className: "panel-footer"}, 
+        React.createElement("button", {type: "submit", className: "btn btn-primary btn-block"}, "Submit")
       )
     )
   }
 })
 
-React.renderComponent(Example( {company:"FakeCo"}), document.getElementById('app'))
+React.renderComponent(React.createElement(Example, {company: "FakeCo"}), document.getElementById('app'))
 
 // Utils
 

@@ -98,21 +98,21 @@ var AllFieldsForm = forms.Form.extend({
       var help
       if (bf.helpText) {
         help = (bf.helpText.__html
-                ? React.DOM.p( {dangerouslySetInnerHTML:bf.helpText})
-                : React.DOM.p(null, bf.helpText))
+                ? React.createElement("p", {dangerouslySetInnerHTML: bf.helpText})
+                : React.createElement("p", null, bf.helpText))
       }
 
       var errors = bf.errors().messages().map(function(message) {
-        return React.DOM.div(null, message)
+        return React.createElement("div", null, message)
       })
 
-      return React.DOM.tr( {key:bf.htmlname}, 
-        React.DOM.th(null, bf.labelTag()),
-        React.DOM.td(null, bf.render(),help),
-        React.DOM.td(null, ''+bf.controlled()),
-        React.DOM.td(null, JSON.stringify(bf.validation())),
-        React.DOM.td(null, errors),
-        React.DOM.td( {className:"cleaned-data"}, cleanedData)
+      return React.createElement("tr", {key: bf.htmlname}, 
+        React.createElement("th", null, bf.labelTag()), 
+        React.createElement("td", null, bf.render(), help), 
+        React.createElement("td", null, ''+bf.controlled()), 
+        React.createElement("td", null, JSON.stringify(bf.validation())), 
+        React.createElement("td", null, errors), 
+        React.createElement("td", {className: "cleaned-data"}, cleanedData)
       )
     }.bind(this))
   }
@@ -130,35 +130,35 @@ var AllFields = React.createClass({displayName: 'AllFields',
 
 , render: function() {
     var nonFieldErrors = this.state.form.nonFieldErrors()
-    return React.DOM.form( {encType:"multipart/form-data", ref:"form", onSubmit:this.onSubmit}, 
-      nonFieldErrors.isPopulated() && React.DOM.div(null, 
-        React.DOM.strong(null, "Non field errors:"),
+    return React.createElement("form", {encType: "multipart/form-data", ref: "form", onSubmit: this.onSubmit}, 
+      nonFieldErrors.isPopulated() && React.createElement("div", null, 
+        React.createElement("strong", null, "Non field errors:"), 
         nonFieldErrors.render()
-      ),
-      React.DOM.table(null, 
-        React.DOM.thead(null, 
-          React.DOM.tr(null, 
-            React.DOM.th(null, "Label"),
-            React.DOM.th(null, "Input"),
-            React.DOM.th(null, "Controlled"),
-            React.DOM.th(null, "Validation"),
-            React.DOM.th(null, "Errors"),
-            React.DOM.th(null, "Cleaned Data")
+      ), 
+      React.createElement("table", null, 
+        React.createElement("thead", null, 
+          React.createElement("tr", null, 
+            React.createElement("th", null, "Label"), 
+            React.createElement("th", null, "Input"), 
+            React.createElement("th", null, "Controlled"), 
+            React.createElement("th", null, "Validation"), 
+            React.createElement("th", null, "Errors"), 
+            React.createElement("th", null, "Cleaned Data")
           )
-        ),
-        React.DOM.tbody(null, 
-          this.state.form.render(),
-          React.DOM.tr(null, 
-            React.DOM.td(null),
-            React.DOM.td( {colSpan:"3"}, 
-              React.DOM.input( {type:"submit", value:"Submit"})
+        ), 
+        React.createElement("tbody", null, 
+          this.state.form.render(), 
+          React.createElement("tr", null, 
+            React.createElement("td", null), 
+            React.createElement("td", {colSpan: "3"}, 
+              React.createElement("input", {type: "submit", value: "Submit"})
             )
           )
         )
-      ),
+      ), 
 
-      this.state.form.cleanedData && React.DOM.h2(null, "form.cleanedData"),
-      React.DOM.pre(null, this.state.form.cleanedData && JSON.stringify(this.state.form.cleanedData, null, ' '))
+      this.state.form.cleanedData && React.createElement("h2", null, "form.cleanedData"), 
+      React.createElement("pre", null, this.state.form.cleanedData && JSON.stringify(this.state.form.cleanedData, null, ' '))
     )
   }
 
@@ -168,6 +168,6 @@ var AllFields = React.createClass({displayName: 'AllFields',
   }
 })
 
-React.renderComponent(AllFields(null), document.getElementById('app'))
+React.renderComponent(React.createElement(AllFields, null), document.getElementById('app'))
 
 }()

@@ -1,15 +1,15 @@
 /**
- * newforms 0.6.0 - https://github.com/insin/newforms
+ * newforms 0.8.0 (dev build at Wed, 29 Oct 2014 14:55:23 GMT) - https://github.com/insin/newforms
  * MIT Licensed
  */
-!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.forms=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.forms=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 'use strict';
 
 var Concur = _dereq_('Concur')
 var is = _dereq_('isomorph/is')
 var format = _dereq_('isomorph/format').formatObj
 var object = _dereq_('isomorph/object')
-var React = (window.React)
+var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null)
 
 var util = _dereq_('./util')
 var widgets = _dereq_('./widgets')
@@ -89,8 +89,8 @@ BoundField.prototype.idForLabel = function() {
 
 BoundField.prototype.render = function(kwargs) {
   if (this.field.showHiddenInitial) {
-    return React.DOM.div(null, this.asWidget(kwargs),
-                         this.asHidden({onlyInitial: true}))
+    return React.createElement('div', null, this.asWidget(kwargs),
+                               this.asHidden({onlyInitial: true}))
   }
   return this.asWidget(kwargs)
 }
@@ -284,7 +284,7 @@ BoundField.prototype.labelTag = function(kwargs) {
   var id = object.get(widget.attrs, 'id', this.autoId())
   if (id) {
     var attrs = object.extend(kwargs.attrs || {}, {htmlFor: widget.idForLabel(id)})
-    contents = React.DOM.label(attrs, contents)
+    contents = React.createElement('label', attrs, contents)
   }
   return contents
 }
@@ -324,12 +324,12 @@ BoundField.prototype.cssClasses = function(extraCssClasses) {
 
 module.exports = BoundField
 
-},{"./util":10,"./widgets":11,"Concur":12,"isomorph/format":15,"isomorph/is":16,"isomorph/object":17}],2:[function(_dereq_,module,exports){
+},{"./util":11,"./widgets":12,"Concur":13,"isomorph/format":16,"isomorph/is":17,"isomorph/object":18}],2:[function(_dereq_,module,exports){
 'use strict';
 
 var Concur = _dereq_('Concur')
 var validators = _dereq_('validators')
-var React = (window.React)
+var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null)
 
 var ValidationError = validators.ValidationError
 
@@ -393,9 +393,9 @@ ErrorList.prototype.asUl = function() {
   if (!this.isPopulated()) {
     return
   }
-  return React.DOM.ul({className: 'errorlist'}
+  return React.createElement('ul', {className: 'errorlist'}
   , this.messages().map(function(error) {
-      return React.DOM.li(null, error)
+      return React.createElement('li', null, error)
     })
   )
 }
@@ -424,12 +424,12 @@ ErrorList.prototype.toJSON = function() {
 
 module.exports = ErrorList
 
-},{"Concur":12,"validators":22}],3:[function(_dereq_,module,exports){
+},{"Concur":13,"validators":23}],3:[function(_dereq_,module,exports){
 'use strict';
 
 var Concur = _dereq_('Concur')
 var object = _dereq_('isomorph/object')
-var React = (window.React)
+var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null)
 
 /**
  * A collection of field errors that knows how to display itself in various
@@ -489,10 +489,10 @@ ErrorObject.prototype.render = function() {
  */
 ErrorObject.prototype.asUl = function() {
   var items = Object.keys(this.errors).map(function(field) {
-    return React.DOM.li(null, field, this.errors[field].asUl())
+    return React.createElement('li', null, field, this.errors[field].asUl())
   }.bind(this))
   if (items.length === 0) { return }
-  return React.DOM.ul({className: 'errorlist'}, items)
+  return React.createElement('ul', {className: 'errorlist'}, items)
 }
 
 /**
@@ -525,7 +525,7 @@ ErrorObject.prototype.toJSON = function() {
 
 module.exports = ErrorObject
 
-},{"Concur":12,"isomorph/object":17}],4:[function(_dereq_,module,exports){
+},{"Concur":13,"isomorph/object":18}],4:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = {
@@ -543,6 +543,7 @@ var validators = _dereq_('validators')
 
 var env = _dereq_('./env')
 var formats = _dereq_('./formats')
+var locales = _dereq_('./locales')
 var util = _dereq_('./util')
 var widgets = _dereq_('./widgets')
 
@@ -1048,12 +1049,11 @@ DecimalField.prototype.widgetAttrs = function(widget) {
  * @param {Object=} kwargs
  */
 var BaseTemporalField = Field.extend({
-  constructor: function BaseTemporalField(kwargs) {
+  inputFormatType: ''
+, constructor: function BaseTemporalField(kwargs) {
     kwargs = object.extend({inputFormats: null}, kwargs)
     Field.call(this, kwargs)
-    if (kwargs.inputFormats !== null) {
-      this.inputFormats = kwargs.inputFormats
-    }
+    this.inputFormats = kwargs.inputFormats
   }
 })
 
@@ -1067,6 +1067,9 @@ BaseTemporalField.prototype.toJavaScript = function(value) {
     value = util.strip(value)
   }
   if (is.String(value)) {
+    if (this.inputFormats === null) {
+      this.inputFormats = formats.getFormat(this.inputFormatType)
+    }
     for (var i = 0, l = this.inputFormats.length; i < l; i++) {
       try {
         return this.strpdate(value, this.inputFormats[i])
@@ -1086,7 +1089,7 @@ BaseTemporalField.prototype.toJavaScript = function(value) {
  * @return {Date}
  */
 BaseTemporalField.prototype.strpdate = function(value, format) {
-  return time.strpdate(value, format)
+  return time.strpdate(value, format, locales.getDefaultLocale())
 }
 
 BaseTemporalField.prototype._hasChanged = function(initial, data) {
@@ -1114,7 +1117,7 @@ BaseTemporalField.prototype._hasChanged = function(initial, data) {
  */
 var DateField = BaseTemporalField.extend({
   widget: widgets.DateInput
-, inputFormats: formats.DEFAULT_DATE_INPUT_FORMATS
+, inputFormatType: 'DATE_INPUT_FORMATS'
 , defaultErrorMessages: {
     invalid: 'Enter a valid date.'
   }
@@ -1149,7 +1152,7 @@ DateField.prototype.toJavaScript = function(value) {
  */
 var TimeField = BaseTemporalField.extend({
   widget: widgets.TimeInput
-, inputFormats: formats.DEFAULT_TIME_INPUT_FORMATS
+, inputFormatType: 'TIME_INPUT_FORMATS'
 , defaultErrorMessages: {
     invalid: 'Enter a valid time.'
   }
@@ -1184,7 +1187,7 @@ TimeField.prototype.toJavaScript = function(value) {
  * @return {Date}
  */
 TimeField.prototype.strpdate = function(value, format) {
-  var t = time.strptime(value, format)
+  var t = time.strptime(value, format, locales.getDefaultLocale())
   return new Date(1900, 0, 1, t[3], t[4], t[5])
 }
 
@@ -1196,7 +1199,7 @@ TimeField.prototype.strpdate = function(value, format) {
  */
 var DateTimeField = BaseTemporalField.extend({
   widget: widgets.DateTimeInput
-, inputFormats: formats.DEFAULT_DATETIME_INPUT_FORMATS
+, inputFormatType: 'DATETIME_INPUT_FORMATS'
 , defaultErrorMessages: {
     invalid: 'Enter a valid date/time.'
   }
@@ -2156,42 +2159,76 @@ module.exports = {
 , SlugField: SlugField
 }
 
-},{"./env":4,"./formats":6,"./util":10,"./widgets":11,"Concur":12,"isomorph/is":16,"isomorph/object":17,"isomorph/time":18,"isomorph/url":19,"validators":22}],6:[function(_dereq_,module,exports){
+},{"./env":4,"./formats":6,"./locales":9,"./util":11,"./widgets":12,"Concur":13,"isomorph/is":17,"isomorph/object":18,"isomorph/time":19,"isomorph/url":20,"validators":23}],6:[function(_dereq_,module,exports){
 'use strict';
 
-var DEFAULT_DATE_INPUT_FORMATS = [
-  '%Y-%m-%d'              // '2006-10-25'
-, '%m/%d/%Y', '%m/%d/%y'  // '10/25/2006', '10/25/06'
-, '%b %d %Y', '%b %d, %Y' // 'Oct 25 2006', 'Oct 25, 2006'
-, '%d %b %Y', '%d %b, %Y' // '25 Oct 2006', '25 Oct, 2006'
-, '%B %d %Y', '%B %d, %Y' // 'October 25 2006', 'October 25, 2006'
-, '%d %B %Y', '%d %B, %Y' // '25 October 2006', '25 October, 2006'
-]
+var object = _dereq_('isomorph/object')
 
-var DEFAULT_TIME_INPUT_FORMATS = [
-  '%H:%M:%S' // '14:30:59'
-, '%H:%M'    // '14:30'
-]
+var locales = _dereq_('./locales')
 
-var DEFAULT_DATETIME_INPUT_FORMATS = [
-  '%Y-%m-%d %H:%M:%S' // '2006-10-25 14:30:59'
-, '%Y-%m-%d %H:%M'    // '2006-10-25 14:30'
-, '%Y-%m-%d'          // '2006-10-25'
-, '%m/%d/%Y %H:%M:%S' // '10/25/2006 14:30:59'
-, '%m/%d/%Y %H:%M'    // '10/25/2006 14:30'
-, '%m/%d/%Y'          // '10/25/2006'
-, '%m/%d/%y %H:%M:%S' // '10/25/06 14:30:59'
-, '%m/%d/%y %H:%M'    // '10/25/06 14:30'
-, '%m/%d/%y'          // '10/25/06'
-]
-
-module.exports = {
-  DEFAULT_DATE_INPUT_FORMATS: DEFAULT_DATE_INPUT_FORMATS
-, DEFAULT_TIME_INPUT_FORMATS: DEFAULT_TIME_INPUT_FORMATS
-, DEFAULT_DATETIME_INPUT_FORMATS: DEFAULT_DATETIME_INPUT_FORMATS
+/**
+ * Standard input formats which will always be accepted.
+ */
+var ISO_INPUT_FORMATS = {
+  'DATE_INPUT_FORMATS': ['%Y-%m-%d']
+, 'TIME_INPUT_FORMATS': ['%H:%M:%S', '%H:%M']
+, 'DATETIME_INPUT_FORMATS': [
+    '%Y-%m-%d %H:%M:%S'
+  , '%Y-%m-%d %H:%M'
+  , '%Y-%m-%d'
+  ]
 }
 
-},{}],7:[function(_dereq_,module,exports){
+var formatCache = {}
+
+/**
+ * Gets all acceptable formats of a certain type (e.g. DATE_INPUT_FORMATS) for a
+ * particular language code. All date/time formats will have the applicable ISO
+ * formats added as lowest-precedence.
+ * If an unknown language code is given, the default locale's formats will be
+ * used instead.
+ * If the locale doesn't have configuration for the format type, only the ISO
+ * formats will be returned.
+ * @param {string} formatType
+ * @param {string=} lang language code - if not given, the default locale's
+ *   formats will be returned.
+ * @return {Array.<string>} a list of formats
+ */
+function getFormat(formatType, lang) {
+  if (!lang) {
+    lang = locales.getDefaultLocale()
+  }
+  var cacheKey = formatType + ':' + lang
+  if (!object.hasOwn(formatCache, cacheKey)) {
+    var langLocales = locales.getLocales(lang)
+    var localeFormats = []
+    for (var i = 0, l = langLocales.length; i < l; i++) {
+      var locale = langLocales[i]
+      if (object.hasOwn(locale, formatType)) {
+        // Copy locale-specific formats, as we may be adding to them
+        localeFormats = locale[formatType].slice()
+        break
+      }
+    }
+    if (object.hasOwn(ISO_INPUT_FORMATS, formatType)) {
+      var isoFormats = ISO_INPUT_FORMATS[formatType]
+      for (var j = 0, m = isoFormats.length; j < m; j++) {
+        var isoFormat = isoFormats[j]
+        if (localeFormats.indexOf(isoFormat) == -1) {
+          localeFormats.push(isoFormat)
+        }
+      }
+    }
+    formatCache[cacheKey] = localeFormats
+  }
+  return formatCache[cacheKey]
+}
+
+module.exports = {
+  getFormat: getFormat
+}
+
+},{"./locales":9,"isomorph/object":18}],7:[function(_dereq_,module,exports){
 'use strict';
 
 var Concur = _dereq_('Concur')
@@ -2199,7 +2236,7 @@ var is = _dereq_('isomorph/is')
 var object = _dereq_('isomorph/object')
 var copy = _dereq_('isomorph/copy')
 var validators = _dereq_('validators')
-var React = (window.React)
+var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null)
 
 var fields = _dereq_('./fields')
 var util = _dereq_('./util')
@@ -3073,7 +3110,7 @@ BaseForm.prototype._rawValue = function(fieldName) {
 
 /**
  * Default render method, which just calls asTable().
- * @return {Array} React.DOM components
+ * @return {Array} ReactElements
  */
 BaseForm.prototype.render = function() {
   return this.asTable()
@@ -3081,7 +3118,7 @@ BaseForm.prototype.render = function() {
 
 /**
  * Returns this form rendered as HTML <tr>s - excluding the <table>.
- * @return {Array} React.DOM components
+ * @return {Array} ReactElements
  */
 BaseForm.prototype.asTable = (function() {
   function normalRow(key, cssClasses, label, field, helpText, errors, extraContent) {
@@ -3089,15 +3126,15 @@ BaseForm.prototype.asTable = (function() {
     if (errors) { contents.push(errors) }
     contents.push(field)
     if (helpText) {
-      contents.push(React.DOM.br(null))
+      contents.push(React.createElement('br', null))
       contents.push(helpText)
     }
     if (extraContent) { contents.push.apply(contents, extraContent) }
     var rowAttrs = {key: key}
     if (cssClasses) { rowAttrs.className = cssClasses }
-    return React.DOM.tr(rowAttrs
-    , React.DOM.th(null, label)
-    , React.DOM.td(null, contents)
+    return React.createElement('tr', rowAttrs
+    , React.createElement('th', null, label)
+    , React.createElement('td', null, contents)
     )
   }
 
@@ -3107,8 +3144,8 @@ BaseForm.prototype.asTable = (function() {
     if (extraContent) { contents.push.apply(contents, extraContent) }
     var rowAttrs = {key: key}
     if (cssClasses) { rowAttrs.className = cssClasses }
-    return React.DOM.tr(rowAttrs
-    , React.DOM.td({colSpan: 2}, contents)
+    return React.createElement('tr', rowAttrs
+    , React.createElement('td', {colSpan: 2}, contents)
     )
   }
 
@@ -3117,21 +3154,21 @@ BaseForm.prototype.asTable = (function() {
 
 /**
  * Returns this form rendered as HTML <li>s - excluding the <ul>.
- * @return {Array} React.DOM components
+ * @return {Array} ReactElements
  */
-BaseForm.prototype.asUl = _singleElementRow(React.DOM.li)
+BaseForm.prototype.asUl = _singleElementRow(React.createFactory('li'))
 
 /**
  * Returns this form rendered as HTML <div>s.
- * @return {Array} React.DOM components
+ * @return {Array} ReactElements
  */
-BaseForm.prototype.asDiv = _singleElementRow(React.DOM.div)
+BaseForm.prototype.asDiv = _singleElementRow(React.createFactory('div'))
 
 /**
  * Helper function for outputting HTML.
  * @param {Function} normalRow a function which produces a normal row.
  * @param {Function} errorRow a function which produces an error row.
- * @return {Array} React.DOM components
+ * @return {Array} ReactElements
  */
 BaseForm.prototype._htmlOutput = function(normalRow, errorRow) {
   var bf
@@ -3167,8 +3204,8 @@ BaseForm.prototype._htmlOutput = function(normalRow, errorRow) {
     helpText = bf.helpText
     if (helpText) {
       helpText = ((is.Object(helpText) && object.hasOwn(helpText, '__html'))
-                  ? React.DOM.span({className: 'helpText', dangerouslySetInnerHTML: helpText})
-                  : React.DOM.span({className: 'helpText'}, helpText))
+                  ? React.createElement('span', {className: 'helpText', dangerouslySetInnerHTML: helpText})
+                  : React.createElement('span', {className: 'helpText'}, helpText))
     }
     // If this is the last row, it should include any hidden fields
     extraContent = (i == l - 1 && hiddenFields.length > 0 ? hiddenFields : null)
@@ -3338,7 +3375,7 @@ module.exports = {
 , Form: Form
 }
 
-},{"./BoundField":1,"./ErrorList":2,"./ErrorObject":3,"./fields":5,"./util":10,"Concur":12,"isomorph/copy":14,"isomorph/is":16,"isomorph/object":17,"validators":22}],8:[function(_dereq_,module,exports){
+},{"./BoundField":1,"./ErrorList":2,"./ErrorObject":3,"./fields":5,"./util":11,"Concur":13,"isomorph/copy":15,"isomorph/is":17,"isomorph/object":18,"validators":23}],8:[function(_dereq_,module,exports){
 'use strict';
 
 var Concur = _dereq_('Concur')
@@ -3970,7 +4007,141 @@ module.exports = {
 , allValid: allValid
 }
 
-},{"./ErrorList":2,"./env":4,"./fields":5,"./forms":7,"./widgets":11,"Concur":12,"isomorph/object":17,"validators":22}],9:[function(_dereq_,module,exports){
+},{"./ErrorList":2,"./env":4,"./fields":5,"./forms":7,"./widgets":12,"Concur":13,"isomorph/object":18,"validators":23}],9:[function(_dereq_,module,exports){
+'use strict';
+
+var object = _dereq_('isomorph/object')
+var time = _dereq_('isomorph/time')
+
+var defaultLocale = {lang: 'en'}
+
+var localeCache = {
+  en: {
+    DATE_INPUT_FORMATS: [
+      '%Y-%m-%d'                        // '2006-10-25'
+    , '%m/%d/%Y', '%m/%d/%y'            // '10/25/2006', '10/25/06'
+    , '%b %d %Y', '%b %d, %Y'           // 'Oct 25 2006', 'Oct 25, 2006'
+    , '%d %b %Y', '%d %b, %Y'           // '25 Oct 2006', '25 Oct, 2006'
+    , '%B %d %Y', '%B %d, %Y'           // 'October 25 2006', 'October 25, 2006'
+    , '%d %B %Y', '%d %B, %Y'           // '25 October 2006', '25 October, 2006'
+    ]
+  , DATETIME_INPUT_FORMATS: [
+      '%Y-%m-%d %H:%M:%S'               // '2006-10-25 14:30:59'
+    , '%Y-%m-%d %H:%M'                  // '2006-10-25 14:30'
+    , '%Y-%m-%d'                        // '2006-10-25'
+    , '%m/%d/%Y %H:%M:%S'               // '10/25/2006 14:30:59'
+    , '%m/%d/%Y %H:%M'                  // '10/25/2006 14:30'
+    , '%m/%d/%Y'                        // '10/25/2006'
+    , '%m/%d/%y %H:%M:%S'               // '10/25/06 14:30:59'
+    , '%m/%d/%y %H:%M'                  // '10/25/06 14:30'
+    , '%m/%d/%y'                        // '10/25/06'
+    ]
+  }
+, en_GB: {
+    DATE_INPUT_FORMATS: [
+      '%d/%m/%Y', '%d/%m/%y'            // '25/10/2006', '25/10/06'
+    , '%b %d %Y', '%b %d, %Y'           // 'Oct 25 2006', 'Oct 25, 2006'
+    , '%d %b %Y', '%d %b, %Y'           // '25 Oct 2006', '25 Oct, 2006'
+    , '%B %d %Y', '%B %d, %Y'           // 'October 25 2006', 'October 25, 2006'
+    , '%d %B %Y', '%d %B, %Y'           // '25 October 2006', '25 October, 2006'
+    ]
+  , DATETIME_INPUT_FORMATS: [
+      '%Y-%m-%d %H:%M:%S'               // '2006-10-25 14:30:59'
+    , '%Y-%m-%d %H:%M'                  // '2006-10-25 14:30'
+    , '%Y-%m-%d'                        // '2006-10-25'
+    , '%d/%m/%Y %H:%M:%S'               // '25/10/2006 14:30:59'
+    , '%d/%m/%Y %H:%M'                  // '25/10/2006 14:30'
+    , '%d/%m/%Y'                        // '25/10/2006'
+    , '%d/%m/%y %H:%M:%S'               // '25/10/06 14:30:59'
+    , '%d/%m/%y %H:%M'                  // '25/10/06 14:30'
+    , '%d/%m/%y'                        // '25/10/06'
+    ]
+  }
+}
+
+/**
+ * Adds a locale object to our own cache (for formats) and isomorph.time's cache
+ * (for time parsing/formatting).
+ * @param {string} lang
+ * @param {string=} lang
+ */
+function addLocale(lang, locale) {
+  localeCache[lang] = locale
+  time.locales[lang] = locale
+}
+
+/**
+ * Gets the most applicable locale, falling back to the language code if
+ * necessary and to the default locale if no matching locale was found.
+ * @param {string=} lang
+ */
+function getLocale(lang) {
+  if (lang) {
+    if (object.hasOwn(localeCache, lang)) {
+      return localeCache[lang]
+    }
+    if (lang.indexOf('_') != -1) {
+      lang = lang.split('_')[0]
+      if (object.hasOwn(localeCache, lang)) {
+        return localeCache[lang]
+      }
+    }
+  }
+  return localeCache[defaultLocale.lang]
+}
+
+/**
+ * Gets all applicable locales, with the most specific first, falling back to
+ * the default locale if necessary.
+ * @param {string=} lang
+ */
+function getLocales(lang) {
+  if (lang) {
+    var locales = []
+    if (object.hasOwn(localeCache, lang)) {
+       locales.push(localeCache[lang])
+    }
+    if (lang.indexOf('_') != -1) {
+      lang = lang.split('_')[0]
+      if (object.hasOwn(localeCache, lang)) {
+        locales.push(localeCache[lang])
+      }
+    }
+    if (locales.length) {
+      return locales
+    }
+  }
+  return [localeCache[defaultLocale.lang]]
+}
+
+/**
+ * Sets the language code for the default locale.
+ * @param {string} lang
+ */
+function setDefaultLocale(lang) {
+  if (!object.hasOwn(localeCache, lang)) {
+    throw new Error('Unknown locale: ' + lang)
+  }
+  defaultLocale.lang = lang
+}
+
+/**
+ * Gets the language code for the default locale.
+ * @return {string}
+ */
+function getDefaultLocale() {
+  return defaultLocale.lang
+}
+
+module.exports = {
+  addLocale: addLocale
+, getDefaultLocale: getDefaultLocale
+, getLocale: getLocale
+, getLocales: getLocales
+, setDefaultLocale: setDefaultLocale
+}
+
+},{"isomorph/object":18,"isomorph/time":19}],10:[function(_dereq_,module,exports){
 'use strict';
 
 var object = _dereq_('isomorph/object')
@@ -3981,6 +4152,7 @@ var fields = _dereq_('./fields')
 var formats = _dereq_('./formats')
 var forms = _dereq_('./forms')
 var formsets = _dereq_('./formsets')
+var locales = _dereq_('./locales')
 var util = _dereq_('./util')
 var widgets = _dereq_('./widgets')
 
@@ -3988,18 +4160,21 @@ var ErrorList = _dereq_('./ErrorList')
 var ErrorObject = _dereq_('./ErrorObject')
 
 module.exports = object.extend({
-  env: env
+  addLocale: locales.addLocale
+, env: env
 , ErrorList: ErrorList
 , ErrorObject: ErrorObject
 , formats: formats
 , formData: util.formData
+, locales: locales
+, setDefaultLocale: locales.setDefaultLocale
 , util: util
 , validateAll: util.validateAll
 , ValidationError: validators.ValidationError
 , validators: validators
 }, fields, forms, formsets, widgets)
 
-},{"./ErrorList":2,"./ErrorObject":3,"./env":4,"./fields":5,"./formats":6,"./forms":7,"./formsets":8,"./util":10,"./widgets":11,"isomorph/object":17,"validators":22}],10:[function(_dereq_,module,exports){
+},{"./ErrorList":2,"./ErrorObject":3,"./env":4,"./fields":5,"./formats":6,"./forms":7,"./formsets":8,"./locales":9,"./util":11,"./widgets":12,"isomorph/object":18,"validators":23}],11:[function(_dereq_,module,exports){
 'use strict';
 
 var is = _dereq_('isomorph/is')
@@ -4390,17 +4565,18 @@ module.exports = {
 , validateAll: validateAll
 }
 
-},{"isomorph/is":16,"isomorph/object":17}],11:[function(_dereq_,module,exports){
+},{"isomorph/is":17,"isomorph/object":18}],12:[function(_dereq_,module,exports){
 'use strict';
 
 var Concur = _dereq_('Concur')
 var is = _dereq_('isomorph/is')
 var object = _dereq_('isomorph/object')
 var time = _dereq_('isomorph/time')
-var React = (window.React)
+var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null)
 
 var env = _dereq_('./env')
 var formats = _dereq_('./formats')
+var locales = _dereq_('./locales')
 var util = _dereq_('./util')
 
 /**
@@ -4541,7 +4717,7 @@ Input.prototype.render = function(name, value, kwargs) {
   if (!(valueAttr == 'defaultValue' && value === '')) {
     finalAttrs[valueAttr] = (value !== '' ? ''+this._formatValue(value) : value)
   }
-  return React.DOM.input(finalAttrs)
+  return React.createElement('input', finalAttrs)
 }
 
 /**
@@ -4675,9 +4851,9 @@ MultipleHiddenInput.prototype.render = function(name, value, kwargs) {
     if (key) {
       inputAttrs.key = id + '_' + i
     }
-    inputs.push(React.DOM.input(inputAttrs))
+    inputs.push(React.createElement('input', inputAttrs))
   }
-  return React.DOM.div(null, inputs)
+  return React.createElement('div', null, inputs)
 }
 
 MultipleHiddenInput.prototype.valueFromData = function(data, files, name) {
@@ -4736,19 +4912,19 @@ var ClearableFileInput = FileInput.extend({
 , templateWithInitial: function(params) {
     return util.formatToArray(
       '{initialText}: {initial} {clearTemplate}{br}{inputText}: {input}'
-    , object.extend(params, {br: React.DOM.br(null)})
+    , object.extend(params, {br: React.createElement('br', null)})
     )
   }
 , templateWithClear: function(params) {
     return util.formatToArray(
       '{checkbox} {label}'
     , object.extend(params, {
-        label: React.DOM.label({htmlFor: params.checkboxId}, params.label)
+        label: React.createElement('label', {htmlFor: params.checkboxId}, params.label)
       })
     )
   }
 , urlMarkupTemplate: function(href, name) {
-    return React.DOM.a({href: href}, name)
+    return React.createElement('a', {href: href}, name)
   }
 })
 
@@ -4793,10 +4969,10 @@ ClearableFileInput.prototype.render = function(name, value, kwargs) {
     , inputText: this.inputText
     , input: input
     })
-    return React.DOM.span(null, contents)
+    return React.createElement('span', null, contents)
   }
   else {
-    return React.DOM.span(null, input)
+    return React.createElement('span', null, input)
   }
 }
 
@@ -4845,7 +5021,7 @@ Textarea.prototype.render = function(name, value, kwargs) {
   var finalAttrs = this.buildAttrs(kwargs.attrs, {name: name})
   var valueAttr = (kwargs.controlled ? 'value' : 'defaultValue')
   finalAttrs[valueAttr] = value
-  return React.DOM.textarea(finalAttrs)
+  return React.createElement('textarea', finalAttrs)
 }
 
 /**
@@ -4856,16 +5032,20 @@ Textarea.prototype.render = function(name, value, kwargs) {
  * @param {Object=} kwargs
  */
 var DateTimeBaseInput = TextInput.extend({
-  constructor: function DateTimeBaseInput(kwargs) {
+  formatType: ''
+, constructor: function DateTimeBaseInput(kwargs) {
     kwargs = object.extend({format: null}, kwargs)
     TextInput.call(this, kwargs)
-    this.format = (kwargs.format !== null ? kwargs.format : this.defaultFormat)
+    this.format = kwargs.format
   }
 })
 
 DateTimeBaseInput.prototype._formatValue = function(value) {
   if (is.Date(value)) {
-    return time.strftime(value, this.format)
+    if (this.format === null) {
+      this.format = formats.getFormat(this.formatType)[0]
+    }
+    return time.strftime(value, this.format, locales.getDefaultLocale())
   }
   return value
 }
@@ -4876,11 +5056,11 @@ DateTimeBaseInput.prototype._formatValue = function(value) {
  * @param {Object=} kwargs
  */
 var DateInput = DateTimeBaseInput.extend({
-  constructor: function DateInput(kwargs) {
+  formatType: 'DATE_INPUT_FORMATS'
+, constructor: function DateInput(kwargs) {
     if (!(this instanceof DateInput)) { return new DateInput(kwargs) }
     DateTimeBaseInput.call(this, kwargs)
   }
-, defaultFormat: formats.DEFAULT_DATE_INPUT_FORMATS[0]
 })
 
 /**
@@ -4889,11 +5069,11 @@ var DateInput = DateTimeBaseInput.extend({
  * @param {Object=} kwargs
  */
 var DateTimeInput = DateTimeBaseInput.extend({
-  constructor: function DateTimeInput(kwargs) {
+  formatType: 'DATETIME_INPUT_FORMATS'
+, constructor: function DateTimeInput(kwargs) {
     if (!(this instanceof DateTimeInput)) { return new DateTimeInput(kwargs) }
     DateTimeBaseInput.call(this, kwargs)
   }
-, defaultFormat: formats.DEFAULT_DATETIME_INPUT_FORMATS[0]
 })
 
 /**
@@ -4902,11 +5082,11 @@ var DateTimeInput = DateTimeBaseInput.extend({
  * @param {Object=} kwargs
  */
 var TimeInput = DateTimeBaseInput.extend({
-  constructor: function TimeInput(kwargs) {
+  formatType: 'TIME_INPUT_FORMATS'
+, constructor: function TimeInput(kwargs) {
     if (!(this instanceof TimeInput)) { return new TimeInput(kwargs) }
     DateTimeBaseInput.call(this, kwargs)
   }
-, defaultFormat: formats.DEFAULT_TIME_INPUT_FORMATS[0]
 })
 
 var defaultCheckTest = function(value) {
@@ -4942,7 +5122,7 @@ CheckboxInput.prototype.render = function(name, value, kwargs) {
   }
   var checkedAttr = (kwargs.controlled ? 'checked' : 'defaultChecked')
   finalAttrs[checkedAttr] = this.checkTest(value)
-  return React.DOM.input(finalAttrs)
+  return React.createElement('input', finalAttrs)
 }
 
 CheckboxInput.prototype.valueFromData = function(data, files, name) {
@@ -4997,7 +5177,7 @@ Select.prototype.render = function(name, selectedValue, kwargs) {
   var options = this.renderOptions(kwargs.choices, [selectedValue])
   var valueAttr = (kwargs.controlled ? 'value' : 'defaultValue')
   finalAttrs[valueAttr] = selectedValue
-  return React.DOM.select(finalAttrs, options)
+  return React.createElement('select', finalAttrs, options)
 }
 
 Select.prototype.renderOptions = function(additionalChoices, selectedValues) {
@@ -5014,7 +5194,7 @@ Select.prototype.renderOptions = function(additionalChoices, selectedValues) {
                                                optgroupChoices[j][0],
                                                optgroupChoices[j][1]))
       }
-      options.push(React.DOM.optgroup({label: choice[0]}, optgroupOptions))
+      options.push(React.createElement('optgroup', {label: choice[0]}, optgroupOptions))
     }
     else {
       options.push(this.renderOption(selectedValuesLookup,
@@ -5036,7 +5216,7 @@ Select.prototype.renderOption = function(selectedValuesLookup, optValue,
       delete selectedValuesLookup[optValue]
     }
   }
-  return React.DOM.option(attrs, optLabel)
+  return React.createElement('option', attrs, optLabel)
 }
 
 /**
@@ -5121,7 +5301,7 @@ SelectMultiple.prototype.render = function(name, selectedValues, kwargs) {
   var options = this.renderOptions(kwargs.choices, selectedValues)
   var valueAttr = (kwargs.controlled ? 'value' : 'defaultValue')
   finalAttrs[valueAttr] = selectedValues
-  return React.DOM.select(finalAttrs, options)
+  return React.createElement('select', finalAttrs, options)
 }
 
 /**
@@ -5169,7 +5349,7 @@ ChoiceInput.prototype.render = function() {
   if (this.idForLabel()) {
     labelAttrs.htmlFor = this.idForLabel()
   }
-  return React.DOM.label(labelAttrs, this.tag(), ' ', this.choiceLabel)
+  return React.createElement('label', labelAttrs, this.tag(), ' ', this.choiceLabel)
 }
 
 ChoiceInput.prototype.isChecked = function() {
@@ -5185,7 +5365,7 @@ ChoiceInput.prototype.tag = function() {
   })
   var checkedAttr = (this.controlled ? 'checked' : 'defaultChecked')
   finalAttrs[checkedAttr] = this.isChecked()
-  return React.DOM.input(finalAttrs)
+  return React.createElement('input', finalAttrs)
 }
 
 ChoiceInput.prototype.idForLabel = function() {
@@ -5293,21 +5473,21 @@ ChoiceFieldRenderer.prototype.render = function() {
                                             this.controlled,
                                             choiceLabel)
       subRenderer.choiceInputConstructor = this.choiceInputConstructor
-      items.push(React.DOM.li(null, choiceValue, subRenderer.render()))
+      items.push(React.createElement('li', null, choiceValue, subRenderer.render()))
     }
     else {
       var w = this.choiceInputConstructor(this.name, this.value,
                                           object.extend({}, this.attrs),
                                           this.controlled,
                                           choice, i)
-      items.push(React.DOM.li(null, w.render()))
+      items.push(React.createElement('li', null, w.render()))
     }
   }
   var listAttrs = {}
   if (id) {
     listAttrs.id = id
   }
-  return React.DOM.ul(listAttrs, items)
+  return React.createElement('ul', listAttrs, items)
 }
 
 var RadioFieldRenderer = ChoiceFieldRenderer.extend({
@@ -5503,7 +5683,7 @@ MultiWidget.prototype.valueFromData = function(data, files, name) {
  * @return a <div> containing the rendered widgets.
  */
 MultiWidget.prototype.formatOutput = function(renderedWidgets) {
-  return React.DOM.div(null, renderedWidgets)
+  return React.createElement('div', null, renderedWidgets)
 }
 
 /**
@@ -5599,7 +5779,7 @@ module.exports = {
 , SplitHiddenDateTimeWidget: SplitHiddenDateTimeWidget
 }
 
-},{"./env":4,"./formats":6,"./util":10,"Concur":12,"isomorph/is":16,"isomorph/object":17,"isomorph/time":18}],12:[function(_dereq_,module,exports){
+},{"./env":4,"./formats":6,"./locales":9,"./util":11,"Concur":13,"isomorph/is":17,"isomorph/object":18,"isomorph/time":19}],13:[function(_dereq_,module,exports){
 'use strict';
 
 var is = _dereq_('isomorph/is')
@@ -5727,7 +5907,7 @@ Concur.extend = function(prototypeProps, constructorProps) {
   return childConstructor
 }
 
-},{"isomorph/is":16,"isomorph/object":17}],13:[function(_dereq_,module,exports){
+},{"isomorph/is":17,"isomorph/object":18}],14:[function(_dereq_,module,exports){
 /*! http://mths.be/punycode v1.2.4 by @mathias */
 ;(function(root) {
 
@@ -6236,7 +6416,7 @@ Concur.extend = function(prototypeProps, constructorProps) {
 
 }(this));
 
-},{}],14:[function(_dereq_,module,exports){
+},{}],15:[function(_dereq_,module,exports){
 'use strict';
 
 var is = _dereq_('./is')
@@ -6539,7 +6719,7 @@ module.exports = {
 , deepCopy: deepCopy
 }
 
-},{"./is":16}],15:[function(_dereq_,module,exports){
+},{"./is":17}],16:[function(_dereq_,module,exports){
 'use strict';
 
 var slice = Array.prototype.slice
@@ -6596,7 +6776,7 @@ module.exports = {
 , fileSize: fileSize
 }
 
-},{}],16:[function(_dereq_,module,exports){
+},{}],17:[function(_dereq_,module,exports){
 'use strict';
 
 var toString = Object.prototype.toString
@@ -6664,7 +6844,7 @@ module.exports = {
 , String: isString
 }
 
-},{}],17:[function(_dereq_,module,exports){
+},{}],18:[function(_dereq_,module,exports){
 'use strict';
 
 /**
@@ -6801,7 +6981,7 @@ module.exports = {
 , setDefault: setDefault
 }
 
-},{}],18:[function(_dereq_,module,exports){
+},{}],19:[function(_dereq_,module,exports){
 'use strict';
 
 var is = _dereq_('./is')
@@ -7154,7 +7334,7 @@ time.strftime = function(date, format, locale) {
 
 module.exports = time
 
-},{"./is":16}],19:[function(_dereq_,module,exports){
+},{"./is":17}],20:[function(_dereq_,module,exports){
 'use strict';
 
 // parseUri 1.2.2
@@ -7245,7 +7425,7 @@ module.exports = {
 , makeUri: makeUri
 }
 
-},{}],20:[function(_dereq_,module,exports){
+},{}],21:[function(_dereq_,module,exports){
 'use strict';
 
 var Concur = _dereq_('Concur')
@@ -7408,7 +7588,7 @@ module.exports = {
   ValidationError: ValidationError
 }
 
-},{"Concur":12,"isomorph/format":15,"isomorph/is":16,"isomorph/object":17}],21:[function(_dereq_,module,exports){
+},{"Concur":13,"isomorph/format":16,"isomorph/is":17,"isomorph/object":18}],22:[function(_dereq_,module,exports){
 'use strict';
 
 var object = _dereq_('isomorph/object')
@@ -7692,7 +7872,7 @@ module.exports = {
 , isValidIPv6Address: isValidIPv6Address
 }
 
-},{"./errors":20,"./validators":22,"isomorph/object":17}],22:[function(_dereq_,module,exports){
+},{"./errors":21,"./validators":23,"isomorph/object":18}],23:[function(_dereq_,module,exports){
 'use strict';
 
 var Concur = _dereq_('Concur')
@@ -8038,6 +8218,6 @@ module.exports = {
 , ipv6: ipv6
 }
 
-},{"./errors":20,"./ipv6":21,"Concur":12,"isomorph/is":16,"isomorph/object":17,"isomorph/url":19,"punycode":13}]},{},[9])
-(9)
+},{"./errors":21,"./ipv6":22,"Concur":13,"isomorph/is":17,"isomorph/object":18,"isomorph/url":20,"punycode":14}]},{},[10])
+(10)
 });

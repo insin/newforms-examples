@@ -41,8 +41,8 @@ GridLayout.prototype.render = function(form) {
   var renderedRows = []
   var nonFieldErrors = form.nonFieldErrors()
   if (nonFieldErrors.isPopulated()) {
-    renderedRows.push(React.DOM.tr( {key:"topErrors", className:this.topErrorCssClass}, 
-      React.DOM.td( {colSpan:2 * this.maxCol}, nonFieldErrors.render())
+    renderedRows.push(React.createElement("tr", {key: "topErrors", className: this.topErrorCssClass}, 
+      React.createElement("td", {colSpan: 2 * this.maxCol}, nonFieldErrors.render())
     ))
   }
   for (var i = 0, l = this.layout.length, rowFields; i < l; i++) {
@@ -53,20 +53,20 @@ GridLayout.prototype.render = function(form) {
       var errors = bf.errors()
       var cssClasses = bf.cssClasses()
       renderedCols.push(
-        React.DOM.th( {className:cssClasses}, bf.labelTag())
-      , React.DOM.td( {className:cssClasses}, 
-          bf.asWidget(),
+        React.createElement("th", {className: cssClasses}, bf.labelTag())
+      , React.createElement("td", {className: cssClasses}, 
+          bf.asWidget(), 
           errors.isPopulated() && errors.render()
         )
       )
     }
     // Fill up any remaining columns
     if (rowFields.length < this.maxCol) {
-      renderedCols.push(React.DOM.td( {colSpan:2 * (this.maxCol - rowFields.length),
-                            className:this.fillerCssClass}
+      renderedCols.push(React.createElement("td", {colSpan: 2 * (this.maxCol - rowFields.length), 
+                            className: this.fillerCssClass}
                         ))
     }
-    renderedRows.push(React.DOM.tr( {key:'row' + i}, renderedCols))
+    renderedRows.push(React.createElement("tr", {key: 'row' + i}, renderedCols))
   }
   return renderedRows
 }
@@ -156,22 +156,22 @@ var CustomLayout = React.createClass({displayName: 'CustomLayout',
   }
 
 , render: function() {
-    return React.DOM.form( {ref:"form", onSubmit:this.onSubmit}, 
-      React.DOM.div( {className:"inline-block"}, 
-        React.DOM.table(null, 
-          React.DOM.tbody(null, 
-            this.state.form.render(),
-            React.DOM.tr(null, 
-              React.DOM.td( {colSpan:"4"}, 
-                React.DOM.input( {type:"submit", value:"Submit"})
+    return React.createElement("form", {ref: "form", onSubmit: this.onSubmit}, 
+      React.createElement("div", {className: "inline-block"}, 
+        React.createElement("table", null, 
+          React.createElement("tbody", null, 
+            this.state.form.render(), 
+            React.createElement("tr", null, 
+              React.createElement("td", {colSpan: "4"}, 
+                React.createElement("input", {type: "submit", value: "Submit"})
               )
             )
           )
         )
-      ),
-      React.DOM.div( {className:"inline-block cleaned-data"}, 
-        this.state.form.cleanedData && React.DOM.h2(null, "form.cleanedData"),
-        React.DOM.pre(null, this.state.form.cleanedData && JSON.stringify(this.state.form.cleanedData, null, ' '))
+      ), 
+      React.createElement("div", {className: "inline-block cleaned-data"}, 
+        this.state.form.cleanedData && React.createElement("h2", null, "form.cleanedData"), 
+        React.createElement("pre", null, this.state.form.cleanedData && JSON.stringify(this.state.form.cleanedData, null, ' '))
       )
     )
   }
@@ -182,6 +182,6 @@ var CustomLayout = React.createClass({displayName: 'CustomLayout',
   }
 })
 
-React.renderComponent(CustomLayout(null), document.getElementById('app'))
+React.renderComponent(React.createElement(CustomLayout, null), document.getElementById('app'))
 
 }()

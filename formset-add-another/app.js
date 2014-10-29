@@ -147,13 +147,13 @@ function addAnother(formset, e) {
 function field(bf, cssClass, options) {
   options = extend({label: true}, options)
   var errors = bf.errors().messages().map(function(message) {
-    return React.DOM.div( {className:"help-block"}, message)
+    return React.createElement("div", {className: "help-block"}, message)
   })
   var errorClass = errors.length > 0 ? ' has-error' : ''
-  return React.DOM.div( {key:bf.htmlName, className:cssClass + errorClass}, 
-    React.DOM.div( {className:"form-group"}, 
-      options.label && bf.labelTag(),
-      bf.asWidget({attrs: {className: 'form-control'}}),
+  return React.createElement("div", {key: bf.htmlName, className: cssClass + errorClass}, 
+    React.createElement("div", {className: "form-group"}, 
+      options.label && bf.labelTag(), 
+      bf.asWidget({attrs: {className: 'form-control'}}), 
       errors
     )
   )
@@ -208,24 +208,24 @@ var AddContact = React.createClass({displayName: 'AddContact',
   }
 
 , render: function() {
-    return React.DOM.form( {ref:"form", onSubmit:this.onSubmit}, 
-      React.DOM.h2(null, "Add ", this.props.type),
-      this.props.children,
-      React.DOM.fieldset(null, 
-        React.DOM.legend(null, "Contact details"),
-        this.renderPhoneNumberForms(),
-        React.DOM.p(null, React.DOM.a( {href:"#another", onClick:partial(this.addAnother, this.state.phoneNumberForms)}, "+ add another phone number")),
+    return React.createElement("form", {ref: "form", onSubmit: this.onSubmit}, 
+      React.createElement("h2", null, "Add ", this.props.type), 
+      this.props.children, 
+      React.createElement("fieldset", null, 
+        React.createElement("legend", null, "Contact details"), 
+        this.renderPhoneNumberForms(), 
+        React.createElement("p", null, React.createElement("a", {href: "#another", onClick: partial(this.addAnother, this.state.phoneNumberForms)}, "+ add another phone number")), 
 
-        this.renderEmailAddressForms(),
-        React.DOM.p(null, React.DOM.a( {href:"#another", onClick:partial(this.addAnother, this.state.emailAddressForms)}, "+ add another email address")),
+        this.renderEmailAddressForms(), 
+        React.createElement("p", null, React.createElement("a", {href: "#another", onClick: partial(this.addAnother, this.state.emailAddressForms)}, "+ add another email address")), 
 
-        this.renderAddressForms(),
-        React.DOM.p(null, React.DOM.a( {href:"#another", onClick:partial(this.addAnother, this.state.addressForms)}, "+ add another address"))
-      ),
-      React.DOM.div( {className:"row"}, 
-        React.DOM.div( {className:"col-sm-6"}, 
-          React.DOM.div( {className:"form-group"}, 
-            React.DOM.input( {type:"submit", className:"btn btn-primary", value:"Submit"})
+        this.renderAddressForms(), 
+        React.createElement("p", null, React.createElement("a", {href: "#another", onClick: partial(this.addAnother, this.state.addressForms)}, "+ add another address"))
+      ), 
+      React.createElement("div", {className: "row"}, 
+        React.createElement("div", {className: "col-sm-6"}, 
+          React.createElement("div", {className: "form-group"}, 
+            React.createElement("input", {type: "submit", className: "btn btn-primary", value: "Submit"})
           )
         )
       )
@@ -236,8 +236,8 @@ var AddContact = React.createClass({displayName: 'AddContact',
     return this.state.phoneNumberForms.forms().map(function(form, i) {
       var renderFunc = (i === 0 ? field : widget)
       var bfo = form.boundFieldsObj()
-      return React.DOM.div( {className:"row"}, 
-        renderFunc(bfo.number, 'col-sm-5'),
+      return React.createElement("div", {className: "row"}, 
+        renderFunc(bfo.number, 'col-sm-5'), 
         renderFunc(bfo.type, 'col-sm-2')
       )
     })
@@ -247,8 +247,8 @@ var AddContact = React.createClass({displayName: 'AddContact',
     return this.state.emailAddressForms.forms().map(function(form, i) {
       var renderFunc = (i === 0 ? field : widget)
       var bfo = form.boundFieldsObj()
-      return React.DOM.div( {className:"row"}, 
-        renderFunc(bfo.email, 'col-sm-5'),
+      return React.createElement("div", {className: "row"}, 
+        renderFunc(bfo.email, 'col-sm-5'), 
         renderFunc(bfo.type, 'col-sm-2')
       )
     })
@@ -259,18 +259,18 @@ var AddContact = React.createClass({displayName: 'AddContact',
     var multiple = forms.length > 1
     return this.state.addressForms.forms().map(function(form, i) {
       var bfo = form.boundFieldsObj()
-      return React.DOM.div(null, 
-        multiple && React.DOM.h4(null, "Address ", i+1),
-        React.DOM.div( {className:"row"}, 
-          field(bfo.address, 'col-sm-5'),
+      return React.createElement("div", null, 
+        multiple && React.createElement("h4", null, "Address ", i+1), 
+        React.createElement("div", {className: "row"}, 
+          field(bfo.address, 'col-sm-5'), 
           field(bfo.type, 'col-sm-2')
-        ),
-        React.DOM.div( {className:"row"}, 
-          field(bfo.city, 'col-sm-3'),
-          field(bfo.county, 'col-sm-2'),
+        ), 
+        React.createElement("div", {className: "row"}, 
+          field(bfo.city, 'col-sm-3'), 
+          field(bfo.county, 'col-sm-2'), 
           field(bfo.postCode, 'col-sm-2')
-        ),
-        React.DOM.div( {className:"row"}, 
+        ), 
+        React.createElement("div", {className: "row"}, 
           field(bfo.country, 'col-sm-7')
         )
       )
@@ -304,19 +304,19 @@ var AddPerson = React.createClass({displayName: 'AddPerson',
 , render: function() {
     var cleanedData
     if (this.state.cleanedData !== false) {
-      cleanedData = React.DOM.div(null, 
-        React.DOM.h2(null, "cleanedData"),
-        React.DOM.pre(null, JSON.stringify(this.state.cleanedData, null, ' '))
+      cleanedData = React.createElement("div", null, 
+        React.createElement("h2", null, "cleanedData"), 
+        React.createElement("pre", null, JSON.stringify(this.state.cleanedData, null, ' '))
       )
     }
     return this.transferPropsTo(
-      AddContact( {ref:"contactDetails",
-                  type:"Person",
-                  prefix:"person",
-                  onSubmit:this.onSubmit}, 
-        cleanedData,
-        React.DOM.fieldset(null, 
-          React.DOM.legend(null, "Personal details"),
+      React.createElement(AddContact, {ref: "contactDetails", 
+                  type: "Person", 
+                  prefix: "person", 
+                  onSubmit: this.onSubmit}, 
+        cleanedData, 
+        React.createElement("fieldset", null, 
+          React.createElement("legend", null, "Personal details"), 
           this.renderPersonForm()
         )
       )
@@ -325,18 +325,18 @@ var AddPerson = React.createClass({displayName: 'AddPerson',
 
 , renderPersonForm: function() {
     var topErrors = this.state.form.nonFieldErrors().messages().map(function(message) {
-      return React.DOM.p( {className:"alert alert-danger"}, message)
+      return React.createElement("p", {className: "alert alert-danger"}, message)
     })
     var bfo = this.state.form.boundFieldsObj()
-    return React.DOM.div(null, 
-      topErrors,
-      React.DOM.div( {className:"row"}, 
-        field(bfo.title, 'col-sm-2'),
-        field(bfo.firstName, 'col-sm-3'),
+    return React.createElement("div", null, 
+      topErrors, 
+      React.createElement("div", {className: "row"}, 
+        field(bfo.title, 'col-sm-2'), 
+        field(bfo.firstName, 'col-sm-3'), 
         field(bfo.lastName, 'col-sm-3')
-      ),
-      React.DOM.div( {className:"row"}, 
-        field(bfo.jobTitle, 'col-sm-4'),
+      ), 
+      React.createElement("div", {className: "row"}, 
+        field(bfo.jobTitle, 'col-sm-4'), 
         field(bfo.organisation, 'col-sm-4')
       )
     )
@@ -378,39 +378,39 @@ var AddOrganisation = React.createClass({displayName: 'AddOrganisation',
 , render: function() {
     var cleanedData
     if (this.state.cleanedData !== false) {
-      cleanedData = React.DOM.div(null, 
-        React.DOM.h2(null, "cleanedData"),
-        React.DOM.pre(null, JSON.stringify(this.state.cleanedData, null, ' '))
+      cleanedData = React.createElement("div", null, 
+        React.createElement("h2", null, "cleanedData"), 
+        React.createElement("pre", null, JSON.stringify(this.state.cleanedData, null, ' '))
       )
     }
     return this.transferPropsTo(
-      AddContact( {ref:"contactDetails",
-                  type:"Organisation",
-                  prefix:"org",
-                  onSubmit:this.onSubmit}, 
-        cleanedData,
-        React.DOM.fieldset(null, 
-          React.DOM.legend(null, "Organisation"),
+      React.createElement(AddContact, {ref: "contactDetails", 
+                  type: "Organisation", 
+                  prefix: "org", 
+                  onSubmit: this.onSubmit}, 
+        cleanedData, 
+        React.createElement("fieldset", null, 
+          React.createElement("legend", null, "Organisation"), 
           this.renderOrganisatonForm()
-        ),
-        React.DOM.fieldset(null, 
-          React.DOM.legend(null, "People"),
-          React.DOM.table( {className:"table table-condensed"}, 
-            React.DOM.thead(null, 
-              React.DOM.tr(null, 
-                React.DOM.th(null, "First Name"),
-                React.DOM.th(null, "Last Name"),
-                React.DOM.th(null, "Job Title"),
-                React.DOM.th(null, "Email"),
-                React.DOM.th(null, "Mobile Phone"),
-                React.DOM.th(null, "Direct Phone")
+        ), 
+        React.createElement("fieldset", null, 
+          React.createElement("legend", null, "People"), 
+          React.createElement("table", {className: "table table-condensed"}, 
+            React.createElement("thead", null, 
+              React.createElement("tr", null, 
+                React.createElement("th", null, "First Name"), 
+                React.createElement("th", null, "Last Name"), 
+                React.createElement("th", null, "Job Title"), 
+                React.createElement("th", null, "Email"), 
+                React.createElement("th", null, "Mobile Phone"), 
+                React.createElement("th", null, "Direct Phone")
               )
-            ),
-            React.DOM.tbody(null, 
+            ), 
+            React.createElement("tbody", null, 
               this.renderPeopleForms()
             )
-          ),
-          React.DOM.p(null, React.DOM.a( {href:"#another", onClick:partial(this.addAnother, this.state.peopleForms)}, "+ add another person"))
+          ), 
+          React.createElement("p", null, React.createElement("a", {href: "#another", onClick: partial(this.addAnother, this.state.peopleForms)}, "+ add another person"))
         )
       )
     )
@@ -418,12 +418,12 @@ var AddOrganisation = React.createClass({displayName: 'AddOrganisation',
 
 , renderOrganisatonForm: function() {
    var topErrors = this.state.form.nonFieldErrors().messages().map(function(message) {
-      return React.DOM.div( {className:"alert alert-error"}, message)
+      return React.createElement("div", {className: "alert alert-error"}, message)
     })
     var bfo = this.state.form.boundFieldsObj()
-    return React.DOM.div(null, 
-      topErrors,
-      React.DOM.div( {className:"row"}, 
+    return React.createElement("div", null, 
+      topErrors, 
+      React.createElement("div", {className: "row"}, 
         field(bfo.name, 'col-sm-4')
       )
     )
@@ -433,22 +433,22 @@ var AddOrganisation = React.createClass({displayName: 'AddOrganisation',
     return this.state.peopleForms.forms().map(function(form) {
       var cells = form.boundFields().map(function(bf) {
         var errors = bf.errors().messages().map(function(message) {
-          return React.DOM.div( {className:"help-block"}, message)
+          return React.createElement("div", {className: "help-block"}, message)
         })
         var errorClass = errors.length > 0 ? 'has-error' : ''
-        return React.DOM.td( {className:errorClass, key:bf.htmlName}, 
-          bf.asWidget({attrs: {className: 'form-control'}}),
+        return React.createElement("td", {className: errorClass, key: bf.htmlName}, 
+          bf.asWidget({attrs: {className: 'form-control'}}), 
           errors
         )
       })
       var nonFieldErrors = form.nonFieldErrors().messages().map(function(message) {
-        return React.DOM.div( {className:"help-block"}, message)
+        return React.createElement("div", {className: "help-block"}, message)
       })
       var nonFieldErrorClass = nonFieldErrors.length > 0 ? 'has-non-field-error' : ''
-      var rows = [React.DOM.tr( {key:form.prefix, className:nonFieldErrorClass}, cells)]
+      var rows = [React.createElement("tr", {key: form.prefix, className: nonFieldErrorClass}, cells)]
       if (nonFieldErrors.length > 0) {
-        rows.unshift(React.DOM.tr( {key:form.prefix + '-nonFieldErrors', className:"error-row"}, 
-          React.DOM.td( {colSpan:"6", className:"has-error"}, nonFieldErrors)
+        rows.unshift(React.createElement("tr", {key: form.prefix + '-nonFieldErrors', className: "error-row"}, 
+          React.createElement("td", {colSpan: "6", className: "has-error"}, nonFieldErrors)
         ))
       }
       return rows
@@ -458,14 +458,14 @@ var AddOrganisation = React.createClass({displayName: 'AddOrganisation',
 
 var App = React.createClass({displayName: 'App',
   render: function() {
-    return React.DOM.div( {className:"container"}, 
-      AddPerson(null),
-      React.DOM.hr(null),
-      AddOrganisation(null)
+    return React.createElement("div", {className: "container"}, 
+      React.createElement(AddPerson, null), 
+      React.createElement("hr", null), 
+      React.createElement(AddOrganisation, null)
     )
   }
 })
 
-React.renderComponent(App(null), document.getElementById('app'))
+React.renderComponent(React.createElement(App, null), document.getElementById('app'))
 
 }()
