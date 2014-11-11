@@ -1,5 +1,3 @@
-/** @jsx React.DOM */
-
 'use strict';
 
 void function() {
@@ -164,7 +162,7 @@ var ContactFormComponent = React.createClass({displayName: 'ContactFormComponent
 , getFormKwargs: function(props, extraKwargs) {
     return extend({
       validation: {on: 'change blur', delay: 500}
-    , onStateChange: this.forceUpdate.bind(this)
+    , onChange: this.forceUpdate.bind(this)
     , company: props.company
     , email: props.email
     , question: props.question
@@ -189,8 +187,9 @@ var ContactFormComponent = React.createClass({displayName: 'ContactFormComponent
 
 , onSubmit: function(e) {
     e.preventDefault()
-    var isValid = this.state.form.validate(this.refs.form)
+    var isValid = this.state.form.validate()
     this.props.onSubmit(isValid ? this.state.form.cleanedData : null)
+    this.forceUpdate()
   }
 
 , render: function() {
@@ -207,7 +206,7 @@ var ContactFormComponent = React.createClass({displayName: 'ContactFormComponent
   }
 })
 
-React.renderComponent(React.createElement(Example, {company: "FakeCo"}), document.getElementById('app'))
+React.render(React.createElement(Example, {company: "FakeCo"}), document.getElementById('app'))
 
 // Utils
 

@@ -3,7 +3,6 @@ var gulp = require('gulp')
 var react = require('react-tools')
 var through = require('through2')
 
-var concat = require('gulp-concat')
 var jshint = require('gulp-jshint')
 var plumber = require('gulp-plumber')
 var rename = require('gulp-rename')

@@ -1,5 +1,3 @@
-/** @jsx React.DOM */
-
 'use strict';
 
 void function() {
@@ -148,9 +146,7 @@ var projects = [
 var CustomLayout = React.createClass({displayName: 'CustomLayout',
   getInitialState: function() {
     return {
-      form: ReleaseForm(projects, {
-        validation: 'auto'
-      , onStateChange: this.forceUpdate.bind(this)
+      form: ReleaseForm(projects, {onChange: this.forceUpdate.bind(this)
       })
     }
   }
@@ -178,10 +174,11 @@ var CustomLayout = React.createClass({displayName: 'CustomLayout',
 
 , onSubmit: function(e) {
     e.preventDefault()
-    this.state.form.validate(this.refs.form)
+    this.state.form.validate()
+    this.forceUpdate()
   }
 })
 
-React.renderComponent(React.createElement(CustomLayout, null), document.getElementById('app'))
+React.render(React.createElement(CustomLayout, null), document.getElementById('app'))
 
 }()

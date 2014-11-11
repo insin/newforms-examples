@@ -1,18 +1,51 @@
 /**
- * newforms 0.8.0 (dev build at Wed, 29 Oct 2014 14:55:23 GMT) - https://github.com/insin/newforms
+ * newforms 0.9.0 - https://github.com/insin/newforms
  * MIT Licensed
  */
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.forms=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.forms=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"./lib/newforms.js":[function(require,module,exports){
 'use strict';
 
-var Concur = _dereq_('Concur')
-var is = _dereq_('isomorph/is')
-var format = _dereq_('isomorph/format').formatObj
-var object = _dereq_('isomorph/object')
+var object = require('isomorph/object')
+var validators = require('validators')
+
+var env = require('./env')
+var fields = require('./fields')
+var formats = require('./formats')
+var forms = require('./forms')
+var formsets = require('./formsets')
+var locales = require('./locales')
+var util = require('./util')
+var widgets = require('./widgets')
+
+var ErrorList = require('./ErrorList')
+var ErrorObject = require('./ErrorObject')
+
+module.exports = object.extend({
+  addLocale: locales.addLocale
+, env: env
+, ErrorList: ErrorList
+, ErrorObject: ErrorObject
+, formats: formats
+, formData: util.formData
+, locales: locales
+, setDefaultLocale: locales.setDefaultLocale
+, util: util
+, validateAll: util.validateAll
+, ValidationError: validators.ValidationError
+, validators: validators
+}, fields, forms, formsets, widgets)
+
+},{"./ErrorList":"C:\\repos\\newforms\\lib\\ErrorList.js","./ErrorObject":"C:\\repos\\newforms\\lib\\ErrorObject.js","./env":"C:\\repos\\newforms\\lib\\env.js","./fields":"C:\\repos\\newforms\\lib\\fields.js","./formats":"C:\\repos\\newforms\\lib\\formats.js","./forms":"C:\\repos\\newforms\\lib\\forms.js","./formsets":"C:\\repos\\newforms\\lib\\formsets.js","./locales":"C:\\repos\\newforms\\lib\\locales.js","./util":"C:\\repos\\newforms\\lib\\util.js","./widgets":"C:\\repos\\newforms\\lib\\widgets.js","isomorph/object":"C:\\repos\\newforms\\node_modules\\isomorph\\object.js","validators":"C:\\repos\\newforms\\node_modules\\validators\\lib\\index.js"}],"C:\\repos\\newforms\\lib\\BoundField.js":[function(require,module,exports){
+'use strict';
+
+var Concur = require('Concur')
+var is = require('isomorph/is')
+var format = require('isomorph/format').formatObj
+var object = require('isomorph/object')
 var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null)
 
-var util = _dereq_('./util')
-var widgets = _dereq_('./widgets')
+var util = require('./util')
+var widgets = require('./widgets')
 
 /**
  * A field and its associated data.
@@ -40,7 +73,7 @@ BoundField.prototype.errors = function() {
 }
 
 BoundField.prototype.errorMessage = function() {
-  return this.errors().messages()[0]
+  return this.errors().first()
 }
 
 BoundField.prototype.errorMessages = function() {
@@ -137,10 +170,7 @@ BoundField.prototype.asWidget = function(kwargs) {
 
   // Add an onChange event handler to update form.data when the field is changed
   // if it's controlled or uses interactive validation.
-  if (controlled || validation !== 'manual') {
-    attrs.onChange =
-      this.form._handleFieldChange.bind(this.form, validation)
-  }
+  attrs.onChange = this.form._handleFieldChange.bind(this.form, validation)
 
   // If validation should happen on events other than onChange, also add event
   // handlers for them.
@@ -324,11 +354,11 @@ BoundField.prototype.cssClasses = function(extraCssClasses) {
 
 module.exports = BoundField
 
-},{"./util":11,"./widgets":12,"Concur":13,"isomorph/format":16,"isomorph/is":17,"isomorph/object":18}],2:[function(_dereq_,module,exports){
+},{"./util":"C:\\repos\\newforms\\lib\\util.js","./widgets":"C:\\repos\\newforms\\lib\\widgets.js","Concur":"C:\\repos\\newforms\\node_modules\\Concur\\lib\\concur.js","isomorph/format":"C:\\repos\\newforms\\node_modules\\isomorph\\format.js","isomorph/is":"C:\\repos\\newforms\\node_modules\\isomorph\\is.js","isomorph/object":"C:\\repos\\newforms\\node_modules\\isomorph\\object.js"}],"C:\\repos\\newforms\\lib\\ErrorList.js":[function(require,module,exports){
 'use strict';
 
-var Concur = _dereq_('Concur')
-var validators = _dereq_('validators')
+var Concur = require('Concur')
+var validators = require('validators')
 var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null)
 
 var ValidationError = validators.ValidationError
@@ -362,6 +392,19 @@ ErrorList.prototype.length = function() {
  */
 ErrorList.prototype.isPopulated = function() {
   return (this.length() > 0)
+}
+
+/**
+ * Returns the first message held in this ErrorList.
+ */
+ErrorList.prototype.first = function() {
+  if (this.data.length > 0) {
+    var error = this.data[0]
+    if (error instanceof ValidationError) {
+      error = error.messages()[0]
+    }
+    return error
+  }
 }
 
 /**
@@ -424,11 +467,11 @@ ErrorList.prototype.toJSON = function() {
 
 module.exports = ErrorList
 
-},{"Concur":13,"validators":23}],3:[function(_dereq_,module,exports){
+},{"Concur":"C:\\repos\\newforms\\node_modules\\Concur\\lib\\concur.js","validators":"C:\\repos\\newforms\\node_modules\\validators\\lib\\index.js"}],"C:\\repos\\newforms\\lib\\ErrorObject.js":[function(require,module,exports){
 'use strict';
 
-var Concur = _dereq_('Concur')
-var object = _dereq_('isomorph/object')
+var Concur = require('Concur')
+var object = require('isomorph/object')
 var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null)
 
 /**
@@ -525,27 +568,27 @@ ErrorObject.prototype.toJSON = function() {
 
 module.exports = ErrorObject
 
-},{"Concur":13,"isomorph/object":18}],4:[function(_dereq_,module,exports){
+},{"Concur":"C:\\repos\\newforms\\node_modules\\Concur\\lib\\concur.js","isomorph/object":"C:\\repos\\newforms\\node_modules\\isomorph\\object.js"}],"C:\\repos\\newforms\\lib\\env.js":[function(require,module,exports){
 'use strict';
 
 module.exports = {
   browser: typeof process == 'undefined'
 }
-},{}],5:[function(_dereq_,module,exports){
+},{}],"C:\\repos\\newforms\\lib\\fields.js":[function(require,module,exports){
 'use strict';
 
-var Concur = _dereq_('Concur')
-var is = _dereq_('isomorph/is')
-var object = _dereq_('isomorph/object')
-var time = _dereq_('isomorph/time')
-var url = _dereq_('isomorph/url')
-var validators = _dereq_('validators')
+var Concur = require('Concur')
+var is = require('isomorph/is')
+var object = require('isomorph/object')
+var time = require('isomorph/time')
+var url = require('isomorph/url')
+var validators = require('validators')
 
-var env = _dereq_('./env')
-var formats = _dereq_('./formats')
-var locales = _dereq_('./locales')
-var util = _dereq_('./util')
-var widgets = _dereq_('./widgets')
+var env = require('./env')
+var formats = require('./formats')
+var locales = require('./locales')
+var util = require('./util')
+var widgets = require('./widgets')
 
 var ValidationError = validators.ValidationError
 var Widget = widgets.Widget
@@ -2159,12 +2202,12 @@ module.exports = {
 , SlugField: SlugField
 }
 
-},{"./env":4,"./formats":6,"./locales":9,"./util":11,"./widgets":12,"Concur":13,"isomorph/is":17,"isomorph/object":18,"isomorph/time":19,"isomorph/url":20,"validators":23}],6:[function(_dereq_,module,exports){
+},{"./env":"C:\\repos\\newforms\\lib\\env.js","./formats":"C:\\repos\\newforms\\lib\\formats.js","./locales":"C:\\repos\\newforms\\lib\\locales.js","./util":"C:\\repos\\newforms\\lib\\util.js","./widgets":"C:\\repos\\newforms\\lib\\widgets.js","Concur":"C:\\repos\\newforms\\node_modules\\Concur\\lib\\concur.js","isomorph/is":"C:\\repos\\newforms\\node_modules\\isomorph\\is.js","isomorph/object":"C:\\repos\\newforms\\node_modules\\isomorph\\object.js","isomorph/time":"C:\\repos\\newforms\\node_modules\\isomorph\\time.js","isomorph/url":"C:\\repos\\newforms\\node_modules\\isomorph\\url.js","validators":"C:\\repos\\newforms\\node_modules\\validators\\lib\\index.js"}],"C:\\repos\\newforms\\lib\\formats.js":[function(require,module,exports){
 'use strict';
 
-var object = _dereq_('isomorph/object')
+var object = require('isomorph/object')
 
-var locales = _dereq_('./locales')
+var locales = require('./locales')
 
 /**
  * Standard input formats which will always be accepted.
@@ -2228,21 +2271,21 @@ module.exports = {
   getFormat: getFormat
 }
 
-},{"./locales":9,"isomorph/object":18}],7:[function(_dereq_,module,exports){
+},{"./locales":"C:\\repos\\newforms\\lib\\locales.js","isomorph/object":"C:\\repos\\newforms\\node_modules\\isomorph\\object.js"}],"C:\\repos\\newforms\\lib\\forms.js":[function(require,module,exports){
 'use strict';
 
-var Concur = _dereq_('Concur')
-var is = _dereq_('isomorph/is')
-var object = _dereq_('isomorph/object')
-var copy = _dereq_('isomorph/copy')
-var validators = _dereq_('validators')
+var Concur = require('Concur')
+var copy = require('isomorph/copy')
+var is = require('isomorph/is')
+var object = require('isomorph/object')
 var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null)
+var validators = require('validators')
 
-var fields = _dereq_('./fields')
-var util = _dereq_('./util')
-var BoundField = _dereq_('./BoundField')
-var ErrorList = _dereq_('./ErrorList')
-var ErrorObject = _dereq_('./ErrorObject')
+var fields = require('./fields')
+var util = require('./util')
+var BoundField = require('./BoundField')
+var ErrorList = require('./ErrorList')
+var ErrorObject = require('./ErrorObject')
 
 var Field = fields.Field
 var FileField = fields.FileField
@@ -2250,6 +2293,11 @@ var ValidationError = validators.ValidationError
 
 /** Property under which non-field-specific errors are stored. */
 var NON_FIELD_ERRORS = '__all__'
+
+if ('production' !== "development") {
+  var warnedOnStateChange = false // Remove in 0.10
+  var warnedOnImpliedValidateAuto = false
+}
 
 /**
  * A collection of Fields that knows how to validate and display itself.
@@ -2261,8 +2309,8 @@ var BaseForm = Concur.extend({
     kwargs = object.extend({
       data: null, files: null, autoId: 'id_{name}', prefix: null,
       initial: null, errorConstructor: ErrorList, labelSuffix: ':',
-      emptyPermitted: false, validation: 'manual', controlled: false,
-      onStateChange: null
+      emptyPermitted: false, validation: null, controlled: false,
+      onStateChange: null, onChange: null
     }, kwargs)
     this.isInitialRender = (kwargs.data === null && kwargs.files === null)
     this.data = kwargs.data || {}
@@ -2274,13 +2322,44 @@ var BaseForm = Concur.extend({
     this.errorConstructor = kwargs.errorConstructor
     this.labelSuffix = kwargs.labelSuffix
     this.emptyPermitted = kwargs.emptyPermitted
-    this.validation = util.normaliseValidation(kwargs.validation)
     this.controlled = kwargs.controlled
-    this.onStateChange = kwargs.onStateChange
+
+    // onStateChange is deperecated in 0.9 - remove in version 0.10
+    if (is.Function(kwargs.onStateChange)) {
+      if ('production' !== "development") {
+        if (!warnedOnStateChange) {
+          util.warning('The onStateChange argument to Form constructors is ' +
+                       'deprecated and will be removed in version 0.10 - use ' +
+                       'onChange instead.')
+          warnedOnStateChange = true
+        }
+      }
+      if (!is.Function(kwargs.onChange)) {
+        kwargs.onChange = kwargs.onStateChange
+      }
+    }
+    this.onChange = kwargs.onChange
+
+    // Auto validation is implied when onChange is passed
+    if (is.Function(kwargs.onChange)) {
+      if ('production' !== "development") {
+        if (!warnedOnImpliedValidateAuto && kwargs.validation === 'auto') {
+          util.info('Passing onChange to a Form or FormSet constructor also ' +
+                    "implies validation: 'auto' by default - you don't have " +
+                    'to set it manually.')
+          warnedOnImpliedValidateAuto = true
+        }
+      }
+      if (kwargs.validation === null) {
+        kwargs.validation = 'auto'
+      }
+    }
+    this.validation = util.normaliseValidation(kwargs.validation || 'manual')
 
     this._errors = null
-    this._changedData = null
-    this._pendingFieldValidation = {} // Pending field validation functions
+    this._lastHasChanged = null
+    /** Cancellable debounced functions for delayed field validation. */
+    this._pendingFieldValidation = {}
 
     // The baseFields attribute is the *prototype-wide* definition of fields.
     // Because a particular *instance* might want to alter this.fields, we
@@ -2288,26 +2367,32 @@ var BaseForm = Concur.extend({
     // always modify this.fields; they should not modify baseFields.
     this.fields = copy.deepCopy(this.baseFields)
 
-    // Now that form.fields exists, we can check if there's any configuration
-    // which *needs* onStateChange on the form or its fields.
-    if (this._needsOnStateChange()) {
-      if (!is.Function(kwargs.onStateChange)) {
-        throw new Error(
-          'Forms must be given an onStateChange callback when they, or any of ' +
-          'their fields, are controlled or use interactive validation.')
+    if ('production' !== "development") {
+      // Now that form.fields exists, we can check if there's any configuration
+      // which *needs* onChange on the form or its fields.
+      if (!is.Function(kwargs.onChange) && this._needsOnChange()) {
+        util.warning("You didn't provide an onChange callback for a " +
+                     this._formName() + ' which has controlled fields. This ' +
+                     'will result in read-only fields.')
       }
-      // If we're doing an initial render (as opposed to rendering input data),
-      // copy initial values to the data object, as it represents form input -
-      // literally so in the case of controlled components once we start taking
-      // some data and isInitialRender flips to false.
-      if (this.isInitialRender) {
-        this._copyInitialToData()
-      }
+    }
+
+    // Copy initial values to the data object, as it represents form input -
+    // literally so in the case of controlled components once we start taking
+    // some data and isInitialRender flips to false.
+    if (this.isInitialRender) {
+      this._copyInitialToData()
     }
   }
 })
 
 // ========================================================= Form mutability ===
+
+BaseForm.prototype._stateChanged = function() {
+  if (typeof this.onChange == 'function') {
+    this.onChange()
+  }
+}
 
 /**
  * Resets a form data back to its initial state, optionally providing new intial
@@ -2323,11 +2408,8 @@ BaseForm.prototype.reset = function(newInitial) {
   this.cleanedData = {}
   this.isInitialRender = true
   this._errors = null
-  this._changedData = null
   this._copyInitialToData()
-  if (typeof this.onStateChange == 'function') {
-    this.onStateChange()
-  }
+  this._stateChanged()
 }
 
 /**
@@ -2342,7 +2424,6 @@ BaseForm.prototype.setData = function(data, kwargs) {
     prefixed: false, validate: true, _triggerStateChange: true
   }, kwargs)
 
-  this._changedData = null
   this.data = (kwargs.prefixed ? data : this._prefixData(data))
 
   if (this.isInitialRender) {
@@ -2358,8 +2439,8 @@ BaseForm.prototype.setData = function(data, kwargs) {
     this._errors = new ErrorObject()
   }
 
-  if (kwargs._triggerStateChange && typeof this.onStateChange == 'function') {
-    this.onStateChange()
+  if (kwargs._triggerStateChange) {
+    this._stateChanged()
   }
 
   if (kwargs.validate) {
@@ -2370,9 +2451,10 @@ BaseForm.prototype.setData = function(data, kwargs) {
 /**
  * Sets the form's entire input data wth data extracted from a ``<form>``, which
  * will be prefixed, if prefixes are being used.
+ * @param {Object.<string,boolean>} kwargs setData options.
  */
-BaseForm.prototype.setFormData = function(formData) {
-  return this.setData(formData, {prefixed: true})
+BaseForm.prototype.setFormData = function(formData, kwargs) {
+  return this.setData(formData, object.extend(kwargs || {}, {prefixed: true}))
 }
 
 /**
@@ -2384,7 +2466,7 @@ BaseForm.prototype.setFormData = function(formData) {
  */
 BaseForm.prototype.updateData = function(data, kwargs) {
   kwargs = object.extend({prefixed: false, validate: true, clearValidation: true}, kwargs)
-  this._changedData = null
+
   object.extend(this.data, (kwargs.prefixed ? data : this._prefixData(data)))
   if (this.isInitialRender) {
     this.isInitialRender = false
@@ -2404,23 +2486,32 @@ BaseForm.prototype.updateData = function(data, kwargs) {
     this._cleanForm()
   }
 
-  if (typeof this.onStateChange == 'function') {
-    this.onStateChange()
-  }
+  this._stateChanged()
 }
 
 /**
- * Validates the given HTML form's data.
- * @param form the <form> containing this form's rendered widgets - this can be
- *   a React <form> component or a real <form> DOM node.
+ * Forces the form to revalidate from scratch. If a <form> is given, data from
+ * it will be set on this form first. Otherwise, validation will be done with
+ * this form's current input data.
+ * @param {(ReactElement|HTMLFormElement)=} form the <form> containing this
+ *   form's rendered widgets - this can be a React <form> component or a real
+ *   <form> DOM node.
  * @return {boolean} true if the form's data is valid.
  */
 BaseForm.prototype.validate = function(form) {
-  if (form && typeof form.getDOMNode == 'function') {
-    form = form.getDOMNode()
+  if (form) {
+    if (typeof form.getDOMNode == 'function') {
+      form = form.getDOMNode()
+    }
+    var data = util.formData(form)
+    return this.setFormData(data, {_triggerStateChange: false})
   }
-  var data = util.formData(form)
-  return this.setFormData(data)
+
+  if (this.isInitialRender) {
+    this.isInitialRender = false
+  }
+  this.fullClean()
+  return this.isValid()
 }
 
 /**
@@ -2642,8 +2733,7 @@ BaseForm.prototype.nonFieldErrors = function() {
  * Determines which fields have changed from initial form data.
  * @return {Array.<string>} a list of changed field names.
  */
-BaseForm.prototype.changedData = function() {
-  if (this._changedData != null) { return this._changedData }
+BaseForm.prototype.changedData = function(_hasChangedCheck) {
   var changedData = []
   var initialValue
   // XXX: For now we're asking the individual fields whether or not
@@ -2673,15 +2763,23 @@ BaseForm.prototype.changedData = function() {
       catch (e) {
         if (!(e instanceof ValidationError)) { throw e }
         // Always assume data has changed if validation fails
+        if (_hasChangedCheck) {
+          return true
+        }
         changedData.push(name)
         continue
       }
     }
     if (field._hasChanged(initialValue, dataValue)) {
+      if (_hasChangedCheck) {
+        return true
+      }
       changedData.push(name)
     }
   }
-  this._changedData = changedData
+  if (_hasChangedCheck) {
+    return false
+  }
   return changedData
 }
 
@@ -2689,7 +2787,17 @@ BaseForm.prototype.changedData = function() {
  * @return {boolean} true if input data differs from initial data.
  */
 BaseForm.prototype.hasChanged = function() {
-  return (this.changedData().length > 0)
+  this._lastHasChanged = this.changedData(true)
+  return this._lastHasChanged
+}
+
+/**
+ * @return {boolean} true if this form is allowed to be empty and if input data
+ *   differs from initial data. This can be used to determine when required
+ *   fields in an extra FormSet form become truly required.
+ */
+BaseForm.prototype.notEmpty = function() {
+  return (this.emptyPermitted && this._lastHasChanged === true)
 }
 
 // ============================================================ Misc. public ===
@@ -2755,13 +2863,24 @@ BaseForm.prototype.partialClean = function(fields) {
   // If the form is permitted to be empty, and none of the form data has
   // changed from the initial data, short circuit any validation.
   if (this.emptyPermitted && !this.hasChanged()) {
+    if (this._errors.isPopulated()) {
+      this._errors = ErrorObject()
+    }
     return
   }
 
+  // Only perform cross-field cleaning if we had no informtaion about which
+  // fields if uses, or one of the fields it uses was just cleaned.
+  var callClean = (typeof this.clean.fields == 'undefined')
   for (var i = 0, l = fields.length; i < l; i++) {
     this._cleanField(fields[i])
+    if (!callClean && this.clean.fields[fields[i]]) {
+      callClean = true
+    }
   }
-  this._cleanForm()
+  if (callClean) {
+    this._cleanForm()
+  }
 }
 
 /**
@@ -2897,8 +3016,8 @@ BaseForm.prototype._updateFieldInputData = function(e) {
   if (this.isInitialRender) {
     this.isInitialRender = false
   }
-  if (this.controlled) {
-    this.onStateChange()
+  if (this.controlled || this.fields[this.removePrefix(htmlName)].controlled) {
+    this._stateChanged()
   }
 }
 
@@ -2926,7 +3045,7 @@ BaseForm.prototype._validateField = function(validation, e) {
  * @param {SyntheticEvent} e the onChange event.
  */
 BaseForm.prototype._handleFieldChange = function(validation, e) {
-  if (validation.onChange) {
+  if (validation && validation.onChange) {
     this._handleFieldValidation({event: 'onChange', delay: validation.onChangeDelay}, e)
   }
   else {
@@ -2958,7 +3077,7 @@ BaseForm.prototype._immediateFieldValidation = function(field) {
     delete this._pendingFieldValidation[field]
   }
   this.partialClean([field])
-  this.onStateChange()
+  this._stateChanged()
 }
 
 /**
@@ -3060,18 +3179,16 @@ BaseForm.prototype._formName = function() {
 }
 
 /**
- * @return {boolean} true if the form or any of its fields have interactive
- *   validation configured, or are configured to generate controlled components.
+ * @return {boolean} true if the form or any of its fields are configured to
+ *   generate controlled components.
  */
-BaseForm.prototype._needsOnStateChange = function() {
-  if (this.controlled === true || this.validation && this.validation !== 'manual') {
+BaseForm.prototype._needsOnChange = function() {
+  if (this.controlled === true) {
     return true
   }
   var names = Object.keys(this.fields)
   for (var i = 0, l = names.length; i < l; i++) {
-    var field = this.fields[names[i]]
-    if (field.controlled === true || (field.validation &&
-                                      field.validation !== 'manual')) {
+    if (this.fields[names[i]].controlled === true) {
       return true
     }
   }
@@ -3093,17 +3210,6 @@ BaseForm.prototype._prefixData = function(data) {
     prefixedData[this.addPrefix(fieldNames[i])] = data[fieldNames[i]]
   }
   return prefixedData
-}
-
-/**
- * Returns the raw value for a particular field name. This is just a convenient
- * wrapper around widget.valueFromData.
- * @param {?string} fieldName the name of a form field.
- */
-BaseForm.prototype._rawValue = function(fieldName) {
-  var field = this.fields[fieldName]
-  var prefix = this.addPrefix(fieldName)
-  return field.widget.valueFromData(this.data, this.files, prefix)
 }
 
 // ======================================================= Default rendering ===
@@ -3308,8 +3414,8 @@ function DeclarativeFieldsMeta(prototypeProps, constructorProps) {
 
   // If any mixins which look like Form constructors were given, inherit their
   // declaredFields and check for shadowed fields.
-  if (object.hasOwn(prototypeProps, '__mixin__')) {
-    var mixins = prototypeProps.__mixin__
+  if (object.hasOwn(prototypeProps, '__mixins__')) {
+    var mixins = prototypeProps.__mixins__
     if (!is.Array(mixins)) { mixins = [mixins] }
     // Process mixins from left-to-right, the same precedence they'll get for
     // having their prototype properties mixed in.
@@ -3338,7 +3444,7 @@ function DeclarativeFieldsMeta(prototypeProps, constructorProps) {
     }
     // We may have wrapped a single mixin in an Array - assign it back to the
     // new form's prototype for processing by Concur.
-    prototypeProps.__mixin__ = mixins
+    prototypeProps.__mixins__ = mixins
   }
 
   // Finally - extend the new form's own declaredFields over the top of
@@ -3353,6 +3459,15 @@ function DeclarativeFieldsMeta(prototypeProps, constructorProps) {
 
   prototypeProps.baseFields = declaredFields
   prototypeProps.declaredFields = declaredFields
+
+  // If a clean method is specified as [field1, field2, ..., cleanFunction],
+  // replace it with the clean function and attach the field names to the
+  // function.
+  if (object.hasOwn(prototypeProps, 'clean') && is.Array(prototypeProps.clean)) {
+    var clean = prototypeProps.clean.pop()
+    clean.fields = object.lookup(prototypeProps.clean)
+    prototypeProps.clean = clean
+  }
 }
 
 /**
@@ -3375,18 +3490,20 @@ module.exports = {
 , Form: Form
 }
 
-},{"./BoundField":1,"./ErrorList":2,"./ErrorObject":3,"./fields":5,"./util":11,"Concur":13,"isomorph/copy":15,"isomorph/is":17,"isomorph/object":18,"validators":23}],8:[function(_dereq_,module,exports){
+},{"./BoundField":"C:\\repos\\newforms\\lib\\BoundField.js","./ErrorList":"C:\\repos\\newforms\\lib\\ErrorList.js","./ErrorObject":"C:\\repos\\newforms\\lib\\ErrorObject.js","./fields":"C:\\repos\\newforms\\lib\\fields.js","./util":"C:\\repos\\newforms\\lib\\util.js","Concur":"C:\\repos\\newforms\\node_modules\\Concur\\lib\\concur.js","isomorph/copy":"C:\\repos\\newforms\\node_modules\\isomorph\\copy.js","isomorph/is":"C:\\repos\\newforms\\node_modules\\isomorph\\is.js","isomorph/object":"C:\\repos\\newforms\\node_modules\\isomorph\\object.js","validators":"C:\\repos\\newforms\\node_modules\\validators\\lib\\index.js"}],"C:\\repos\\newforms\\lib\\formsets.js":[function(require,module,exports){
 'use strict';
 
-var Concur = _dereq_('Concur')
-var object = _dereq_('isomorph/object')
-var validators = _dereq_('validators')
+var Concur = require('Concur')
+var is = require('isomorph/is')
+var object = require('isomorph/object')
+var validators = require('validators')
 
-var env = _dereq_('./env')
-var fields = _dereq_('./fields')
-var forms = _dereq_('./forms')
-var widgets = _dereq_('./widgets')
-var ErrorList = _dereq_('./ErrorList')
+var env = require('./env')
+var fields = require('./fields')
+var forms = require('./forms')
+var util = require('./util')
+var widgets = require('./widgets')
+var ErrorList = require('./ErrorList')
 
 var BooleanField = fields.BooleanField
 var HiddenInput = widgets.HiddenInput
@@ -3425,6 +3542,10 @@ var ManagementForm = (function() {
   return forms.Form.extend(fields)
 })()
 
+if ('production' !== "development") {
+  var warnedOnStateChange = false // Remove in 0.10
+}
+
 /**
  * A collection of instances of the same Form.
  * @constructor
@@ -3435,7 +3556,7 @@ var BaseFormSet = Concur.extend({
     kwargs = object.extend({
       data: null, files: null, autoId: 'id_{name}', prefix: null,
       initial: null, errorConstructor: ErrorList, managementFormCssClass: null,
-      validation: 'manual', controlled: false, onStateChange: null
+      validation: null, controlled: false, onStateChange: null, onChange: null
     }, kwargs)
     this.isInitialRender = (kwargs.data === null && kwargs.files === null)
     this.prefix = kwargs.prefix || this.getDefaultPrefix()
@@ -3447,12 +3568,34 @@ var BaseFormSet = Concur.extend({
     this.managementFormCssClass = kwargs.managementFormCssClass
     this.validation = kwargs.validation
     this.controlled = kwargs.controlled
-    this.onStateChange = kwargs.onStateChange
+
+    // onStateChange is deperecated in 0.9 - remove in version 0.10
+    if (is.Function(kwargs.onStateChange)) {
+      if ('production' !== "development") {
+        if (!warnedOnStateChange) {
+          util.warning('The onStateChange argument to FormSet constructors is ' +
+                       'deprecated and will be removed in version 0.10 - use ' +
+                       'onChange instead.')
+          warnedOnStateChange = true
+        }
+      }
+      if (!is.Function(kwargs.onChange)) {
+        kwargs.onChange = kwargs.onStateChange
+      }
+    }
+    this.onChange = kwargs.onChange
+
     this._forms = null
     this._errors = null
     this._nonFormErrors = null
   }
 })
+
+BaseFormSet.prototype._stateChanged = function() {
+  if (typeof this.onChange == 'function') {
+    this.onChange()
+  }
+}
 
 /**
  * Sets the formset's entire input data, also triggering validation by default.
@@ -3463,13 +3606,15 @@ var BaseFormSet = Concur.extend({
  *   validated, true if the new data is valid.
  */
 BaseFormSet.prototype.setData = function(data, kwargs) {
-  kwargs = object.extend({validate: true}, kwargs)
+  kwargs = object.extend({validate: true, _triggerStateChange: true}, kwargs)
 
   this.data = data
   var formDataSettingOptiona = {
     prefixed: true, validate: kwargs.validate, _triggerStateChange: false
   }
-  this.forms().map(function(form) {form.setData(data, formDataSettingOptiona) })
+  this.forms().forEach(function(form) {
+    form.setData(data, formDataSettingOptiona)
+  })
 
   if (this.isInitialRender) {
     this.isInitialRender = false
@@ -3485,8 +3630,8 @@ BaseFormSet.prototype.setData = function(data, kwargs) {
     this._nonFormErrors = new this.errorConstructor()
   }
 
-  if (typeof this.onStateChange == 'function') {
-    this.onStateChange()
+  if (kwargs._triggerStateChange) {
+    this._stateChanged()
   }
 
   if (kwargs.validate) {
@@ -3600,6 +3745,22 @@ BaseFormSet.prototype.addAnother = function() {
   if (this._forms !== null) {
     this._forms[currentFormCount] = this._constructForm(currentFormCount)
   }
+ this._stateChanged()
+}
+
+// Assumption - the UI will only let the user remove extra forms
+BaseFormSet.prototype.removeForm = function(index) {
+  if (this.extra === 0) {
+    throw new Error("Can't remove a form when there are no extra forms")
+  }
+  this.extra--
+  if (this._forms !== null) {
+    this._forms.splice(index, 1)
+  }
+  if (this._errors !== null) {
+    this._errors.splice(index, 1)
+  }
+ this._stateChanged()
 }
 
 /**
@@ -3612,7 +3773,7 @@ BaseFormSet.prototype._constructForm = function(i) {
   , errorConstructor: this.errorConstructor
   , validation: this.validation
   , controlled: this.controlled
-  , onStateChange: this.onStateChange
+  , onChange: this.onChange
   }
   if (!this.isInitialRender) {
     defaults.data = this.data
@@ -3662,7 +3823,12 @@ BaseFormSet.prototype.emptyForm = function() {
  * Returns a list of form.cleanedData objects for every form in this.forms().
  */
 BaseFormSet.prototype.cleanedData = function() {
-  return this.forms().map(function(form) { return form.cleanedData })
+  var forms = this.initialForms()
+  // Don't include empty extra forms
+  forms.push.apply(forms, this.extraForms().filter(function(form) {
+    return form.hasChanged()
+  }))
+  return forms.map(function(form) { return form.cleanedData })
 }
 
 /**
@@ -3747,6 +3913,16 @@ BaseFormSet.prototype.getDefaultPrefix = function() {
   return 'form'
 }
 
+BaseFormSet.prototype.addError = function(error) {
+  if (!(error instanceof ValidationError)) {
+    // Normalise to ValidationError and let its constructor do the hard work of
+    // making sense of the input.
+    error = ValidationError(error)
+  }
+
+  this._nonFormErrors.extend(error.errorList)
+}
+
 /**
  * Returns an ErrorList of errors that aren't associated with a particular
  * form -- i.e., from formset.clean(). Returns an empty ErrorList if there are
@@ -3811,6 +3987,38 @@ BaseFormSet.prototype.isValid = function() {
   }
 
   return (formsValid && !this.nonFormErrors().isPopulated())
+}
+
+/**
+ * Forces the formset to revalidate from scratch. If a <form> is given, data
+ * from it will be set on this formset's forms first. Otherwise, validation will
+ * be done with current input data..
+ * @param {(ReactElement|HTMLFormElement)=} form the <form> containing this
+ *   formset's rendered widgets - this can be a React <form> component or a real
+ *   <form> DOM node.
+ * @return {boolean} true if the formset is valid.
+ */
+BaseFormSet.prototype.validate = function(form) {
+  if (form) {
+    if (typeof form.getDOMNode == 'function') {
+      form = form.getDOMNode()
+    }
+    var data = util.formData(form)
+    return this.setData(data, {_triggerStateChange: false})
+  }
+
+  // Force all forms to revalidate first
+  this.forms().forEach(function(form) {
+    if (form.isInitialRender) {
+      form.isInitialRender = false
+    }
+    form.fullClean()
+  })
+  if (this.isInitialRender) {
+    this.isInitialRender = false
+  }
+  this.fullClean()
+  return this.isValid()
 }
 
 /**
@@ -4007,11 +4215,11 @@ module.exports = {
 , allValid: allValid
 }
 
-},{"./ErrorList":2,"./env":4,"./fields":5,"./forms":7,"./widgets":12,"Concur":13,"isomorph/object":18,"validators":23}],9:[function(_dereq_,module,exports){
+},{"./ErrorList":"C:\\repos\\newforms\\lib\\ErrorList.js","./env":"C:\\repos\\newforms\\lib\\env.js","./fields":"C:\\repos\\newforms\\lib\\fields.js","./forms":"C:\\repos\\newforms\\lib\\forms.js","./util":"C:\\repos\\newforms\\lib\\util.js","./widgets":"C:\\repos\\newforms\\lib\\widgets.js","Concur":"C:\\repos\\newforms\\node_modules\\Concur\\lib\\concur.js","isomorph/is":"C:\\repos\\newforms\\node_modules\\isomorph\\is.js","isomorph/object":"C:\\repos\\newforms\\node_modules\\isomorph\\object.js","validators":"C:\\repos\\newforms\\node_modules\\validators\\lib\\index.js"}],"C:\\repos\\newforms\\lib\\locales.js":[function(require,module,exports){
 'use strict';
 
-var object = _dereq_('isomorph/object')
-var time = _dereq_('isomorph/time')
+var object = require('isomorph/object')
+var time = require('isomorph/time')
 
 var defaultLocale = {lang: 'en'}
 
@@ -4141,44 +4349,11 @@ module.exports = {
 , setDefaultLocale: setDefaultLocale
 }
 
-},{"isomorph/object":18,"isomorph/time":19}],10:[function(_dereq_,module,exports){
+},{"isomorph/object":"C:\\repos\\newforms\\node_modules\\isomorph\\object.js","isomorph/time":"C:\\repos\\newforms\\node_modules\\isomorph\\time.js"}],"C:\\repos\\newforms\\lib\\util.js":[function(require,module,exports){
 'use strict';
 
-var object = _dereq_('isomorph/object')
-var validators = _dereq_('validators')
-
-var env = _dereq_('./env')
-var fields = _dereq_('./fields')
-var formats = _dereq_('./formats')
-var forms = _dereq_('./forms')
-var formsets = _dereq_('./formsets')
-var locales = _dereq_('./locales')
-var util = _dereq_('./util')
-var widgets = _dereq_('./widgets')
-
-var ErrorList = _dereq_('./ErrorList')
-var ErrorObject = _dereq_('./ErrorObject')
-
-module.exports = object.extend({
-  addLocale: locales.addLocale
-, env: env
-, ErrorList: ErrorList
-, ErrorObject: ErrorObject
-, formats: formats
-, formData: util.formData
-, locales: locales
-, setDefaultLocale: locales.setDefaultLocale
-, util: util
-, validateAll: util.validateAll
-, ValidationError: validators.ValidationError
-, validators: validators
-}, fields, forms, formsets, widgets)
-
-},{"./ErrorList":2,"./ErrorObject":3,"./env":4,"./fields":5,"./formats":6,"./forms":7,"./formsets":8,"./locales":9,"./util":11,"./widgets":12,"isomorph/object":18,"validators":23}],11:[function(_dereq_,module,exports){
-'use strict';
-
-var is = _dereq_('isomorph/is')
-var object = _dereq_('isomorph/object')
+var is = require('isomorph/is')
+var object = require('isomorph/object')
 
 /**
  * Replaces String {placeholders} with properties of a given object, but
@@ -4289,7 +4464,7 @@ function normaliseValidationEvents(events) {
 /**
  * @param {string} events
  */
-function normaliseValidatonString(events) {
+function normaliseValidationString(events) {
   return normaliseValidationEvents(strip(events).split(/ +/g))
 }
 
@@ -4304,12 +4479,12 @@ function normaliseValidation(validation) {
     return {events: ['onBlur'], onChange: true, onChangeDelay: 369}
   }
   else if (is.String(validation)) {
-    return normaliseValidatonString(validation)
+    return normaliseValidationString(validation)
   }
   else if (is.Object(validation)) {
     var normalised
     if (is.String(validation.on)) {
-      normalised = normaliseValidatonString(validation.on)
+      normalised = normaliseValidationString(validation.on)
     }
     else if (is.Array(validation.on)) {
       normalised = normaliseValidationEvents(validation.on)
@@ -4552,8 +4727,21 @@ function validateAll(form, formsAndFormsets) {
   return isValid
 }
 
+var info = function() {}
+var warning = function() {}
+
+if ('production' !== "development") {
+  info = function(message) {
+    console.warn('[newforms] ' + message)
+  }
+  warning = function(message) {
+    console.warn('[newforms] Warning: ' + message)
+  }
+}
+
 module.exports = {
   debounce: debounce
+, info: info
 , fieldData: fieldData
 , formatToArray: formatToArray
 , formData: formData
@@ -4563,21 +4751,22 @@ module.exports = {
 , prettyName: prettyName
 , strip: strip
 , validateAll: validateAll
+, warning: warning
 }
 
-},{"isomorph/is":17,"isomorph/object":18}],12:[function(_dereq_,module,exports){
+},{"isomorph/is":"C:\\repos\\newforms\\node_modules\\isomorph\\is.js","isomorph/object":"C:\\repos\\newforms\\node_modules\\isomorph\\object.js"}],"C:\\repos\\newforms\\lib\\widgets.js":[function(require,module,exports){
 'use strict';
 
-var Concur = _dereq_('Concur')
-var is = _dereq_('isomorph/is')
-var object = _dereq_('isomorph/object')
-var time = _dereq_('isomorph/time')
+var Concur = require('Concur')
+var is = require('isomorph/is')
+var object = require('isomorph/object')
+var time = require('isomorph/time')
 var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null)
 
-var env = _dereq_('./env')
-var formats = _dereq_('./formats')
-var locales = _dereq_('./locales')
-var util = _dereq_('./util')
+var env = require('./env')
+var formats = require('./formats')
+var locales = require('./locales')
+var util = require('./util')
 
 /**
  * Some widgets are made of multiple HTML elements -- namely, RadioSelect.
@@ -4648,7 +4837,7 @@ Widget.prototype.subWidgets = function(name, value, kwargs) {
  * @abstract
  */
 Widget.prototype.render = function(name, value, kwargs) {
-  throw new Error('Constructors extending must implement a render() method.')
+  throw new Error('Constructors extending Widget must implement a render() method.')
 }
 
 /**
@@ -5564,7 +5753,7 @@ RendererMixin.prototype.idForLabel = function(id) {
  * @param {Object=} kwargs
  */
 var RadioSelect = Select.extend({
-  __mixin__: RendererMixin
+  __mixins__: [RendererMixin]
 , constructor: function(kwargs) {
     if (!(this instanceof RadioSelect)) { return new RadioSelect(kwargs) }
     RendererMixin.call(this, kwargs)
@@ -5581,7 +5770,7 @@ var RadioSelect = Select.extend({
  * @param {Object=} kwargs
  */
 var CheckboxSelectMultiple = SelectMultiple.extend({
-  __mixin__: RendererMixin
+  __mixins__: [RendererMixin]
 , constructor: function(kwargs) {
     if (!(this instanceof CheckboxSelectMultiple)) { return new CheckboxSelectMultiple(kwargs) }
     RendererMixin.call(this, kwargs)
@@ -5779,40 +5968,61 @@ module.exports = {
 , SplitHiddenDateTimeWidget: SplitHiddenDateTimeWidget
 }
 
-},{"./env":4,"./formats":6,"./locales":9,"./util":11,"Concur":13,"isomorph/is":17,"isomorph/object":18,"isomorph/time":19}],13:[function(_dereq_,module,exports){
+},{"./env":"C:\\repos\\newforms\\lib\\env.js","./formats":"C:\\repos\\newforms\\lib\\formats.js","./locales":"C:\\repos\\newforms\\lib\\locales.js","./util":"C:\\repos\\newforms\\lib\\util.js","Concur":"C:\\repos\\newforms\\node_modules\\Concur\\lib\\concur.js","isomorph/is":"C:\\repos\\newforms\\node_modules\\isomorph\\is.js","isomorph/object":"C:\\repos\\newforms\\node_modules\\isomorph\\object.js","isomorph/time":"C:\\repos\\newforms\\node_modules\\isomorph\\time.js"}],"C:\\repos\\newforms\\node_modules\\Concur\\lib\\concur.js":[function(require,module,exports){
 'use strict';
 
-var is = _dereq_('isomorph/is')
-var object = _dereq_('isomorph/object')
+var hasOwn = Object.prototype.hasOwnProperty
+var toString = Object.prototype.toString
+
+function type(obj) {
+  return toString.call(obj).slice(8, -1).toLowerCase()
+}
+
+function inherits(childConstructor, parentConstructor) {
+  var F = function() {}
+  F.prototype = parentConstructor.prototype
+  childConstructor.prototype = new F()
+  childConstructor.prototype.constructor = childConstructor
+  return childConstructor
+}
+
+function extend(dest, src) {
+  for (var prop in src) {
+    if (hasOwn.call(src, prop)) {
+      dest[prop] = src[prop]
+    }
+  }
+  return dest
+}
 
 /**
  * Mixes in properties from one object to another. If the source object is a
  * Function, its prototype is mixed in instead.
  */
 function mixin(dest, src) {
-  if (is.Function(src)) {
-    object.extend(dest, src.prototype)
+  if (type(src) == 'function') {
+    extend(dest, src.prototype)
   }
   else {
-    object.extend(dest, src)
+    extend(dest, src)
   }
 }
 
 /**
- * Applies mixins specified as a __mixin__ property on the given properties
+ * Applies mixins specified as a __mixins__ property on the given properties
  * object, returning an object containing the mixed in properties.
  */
 function applyMixins(properties) {
-  var mixins = properties.__mixin__
-  if (!is.Array(mixins)) {
+  var mixins = properties.__mixins__
+  if (type(mixins) != 'array') {
     mixins = [mixins]
   }
   var mixedProperties = {}
   for (var i = 0, l = mixins.length; i < l; i++) {
     mixin(mixedProperties, mixins[i])
   }
-  delete properties.__mixin__
-  return object.extend(mixedProperties, properties)
+  delete properties.__mixins__
+  return extend(mixedProperties, properties)
 }
 
 /**
@@ -5836,18 +6046,18 @@ function inheritFrom(parentConstructor, childConstructor, prototypeProps, constr
   // Base constructors should only have the properties they're defined with
   if (parentConstructor !== Concur) {
     // Inherit the parent's prototype
-    object.inherits(childConstructor, parentConstructor)
+    inherits(childConstructor, parentConstructor)
     childConstructor.__super__ = parentConstructor.prototype
   }
 
   // Add prototype properties - this is why we took a copy of the child
   // constructor reference in extend() - if a .constructor had been passed as a
-  // __mixin__ and overitten prototypeProps.constructor, these properties would
+  // __mixins__ and overitten prototypeProps.constructor, these properties would
   // be getting set on the mixed-in constructor's prototype.
-  object.extend(childConstructor.prototype, prototypeProps)
+  extend(childConstructor.prototype, prototypeProps)
 
   // Add constructor properties
-  object.extend(childConstructor, constructorProps)
+  extend(childConstructor, constructorProps)
 
   return childConstructor
 }
@@ -5858,7 +6068,7 @@ function inheritFrom(parentConstructor, childConstructor, prototypeProps, constr
 var Concur = module.exports = function() {}
 
 /**
- * Details of a coonstructor's inheritance chain - Concur just facilitates sugar
+ * Details of a constructor's inheritance chain - Concur just facilitates sugar
  * so we don't include it in the initial chain. Arguably, Object.prototype could
  * go here, but it's just not that interesting.
  */
@@ -5882,13 +6092,15 @@ Concur.extend = function(prototypeProps, constructorProps) {
 
   // Any child constructor passed in should take precedence - grab a reference
   // to it befoer we apply any mixins.
-  var childConstructor = object.get(prototypeProps, 'constructor', null)
+  var childConstructor = (hasOwn.call(prototypeProps, 'constructor')
+                          ? prototypeProps.constructor
+                          : null)
 
   // If any mixins are specified, mix them into the property objects
-  if (object.hasOwn(prototypeProps, '__mixin__')) {
+  if (hasOwn.call(prototypeProps, '__mixins__')) {
     prototypeProps = applyMixins(prototypeProps)
   }
-  if (object.hasOwn(constructorProps, '__mixin__')) {
+  if (hasOwn.call(constructorProps, '__mixins__')) {
     constructorProps = applyMixins(constructorProps)
   }
 
@@ -5907,7 +6119,7 @@ Concur.extend = function(prototypeProps, constructorProps) {
   return childConstructor
 }
 
-},{"isomorph/is":17,"isomorph/object":18}],14:[function(_dereq_,module,exports){
+},{}],"C:\\repos\\newforms\\node_modules\\browserify\\node_modules\\punycode\\punycode.js":[function(require,module,exports){
 /*! http://mths.be/punycode v1.2.4 by @mathias */
 ;(function(root) {
 
@@ -6416,10 +6628,20 @@ Concur.extend = function(prototypeProps, constructorProps) {
 
 }(this));
 
-},{}],15:[function(_dereq_,module,exports){
+},{}],"C:\\repos\\newforms\\node_modules\\isomorph\\copy.js":[function(require,module,exports){
 'use strict';
 
-var is = _dereq_('./is')
+var hasOwn = Object.prototype.hasOwnProperty
+var toString = Object.prototype.toString
+var type = function(obj) { return toString.call(obj).slice(8, -1).toLowerCase() }
+
+var primitiveWrapperTypes = {
+  boolean: true
+, number: true
+, string: true
+}
+
+var stringPropsRE = /^(?:\d+|length)$/
 
 /* This file is part of OWL JavaScript Utilities.
 
@@ -6454,19 +6676,29 @@ function clone(target) {
 
 // Shallow Copy
 function copy(target) {
+  var c, property
   if (typeof target != 'object') {
     // Non-objects have value semantics, so target is already a copy
     return target
   }
   else {
     var value = target.valueOf()
-    if (target != value) {
-      // the object is a standard object wrapper for a native type, say String.
+    if (target == value) {
+      // The object is a standard object wrapper for a native type, say String.
       // we can make a copy by instantiating a new object around the value.
-      return new target.constructor(value)
+      c = new target.constructor(value)
+      var notString = type(target) != 'string'
+
+      // Wrappers can have properties added to them
+      for (property in target) {
+        if (hasOwn.call(target, property) && (notString || !stringPropsRE.test(property))) {
+          c[property] = target[property]
+        }
+      }
+
+      return c
     }
     else {
-      var c, property
       // We have a normal object. If possible, we'll clone the original's
       // prototype (not the original) to get an empty object with the same
       // prototype chain as the original. If just copy the instance properties.
@@ -6477,7 +6709,7 @@ function copy(target) {
         // Give the copy all the instance properties of target. It has the same
         // prototype as target, so inherited properties are already there.
         for (property in target) {
-          if (target.hasOwnProperty(property)) {
+          if (hasOwn.call(target, property)) {
             c[property] = target[property]
           }
         }
@@ -6604,7 +6836,7 @@ DeepCopyAlgorithm.prototype = {
     // result instead of descending into it recursively.
     this.cacheResult(source, result)
 
-    // Only DeepCopier.populate() can recursively deep copy.  o, to keep track
+    // Only DeepCopier.populate() can recursively deep copy. So, to keep track
     // of recursion depth, we increment this shared counter before calling it,
     // and decrement it afterwards.
     this.depth++
@@ -6664,7 +6896,7 @@ deepCopy.register({
 
 , populate: function(deepCopy, source, result) {
     for (var key in source) {
-      if (source.hasOwnProperty(key)) {
+      if (hasOwn.call(source, key)) {
         result[key] = deepCopy(source[key])
       }
     }
@@ -6672,10 +6904,55 @@ deepCopy.register({
   }
 })
 
+// Standard primitive wrapper copier
+deepCopy.register({
+  canCopy: function(source) {
+    return primitiveWrapperTypes[type(source)]
+  }
+
+, create: function(source) {
+    return new source.constructor(source.valueOf())
+  }
+
+, populate: function(deepCopy, source, result) {
+    var notString = type(source) != 'string'
+    for (var key in source) {
+      if (hasOwn.call(source, key) && (notString || !stringPropsRE.test(key))) {
+        result[key] = deepCopy(source[key])
+      }
+    }
+    return result
+  }
+})
+
+// RegExp copier
+deepCopy.register({
+  canCopy: function(source) {
+    return type(source) == 'regexp'
+  }
+
+, create: function(source) {
+    return source
+  }
+
+
+})
+
+// Date copier
+deepCopy.register({
+  canCopy: function(source) {
+    return type(source) == 'date'
+  }
+
+, create: function(source) {
+    return new Date(source)
+  }
+})
+
 // Array copier
 deepCopy.register({
   canCopy: function(source) {
-    return is.Array(source)
+    return type(source) == 'array'
   }
 
 , create: function(source) {
@@ -6690,28 +6967,6 @@ deepCopy.register({
   }
 })
 
-// Date copier
-deepCopy.register({
-  canCopy: function(source) {
-    return is.Date(source)
-  }
-
-, create: function(source) {
-    return new Date(source)
-  }
-})
-
-// RegExp copier
-deepCopy.register({
-  canCopy: function(source) {
-    return is.RegExp(source)
-  }
-
-, create: function(source) {
-    return source
-  }
-})
-
 module.exports = {
   DeepCopyAlgorithm: DeepCopyAlgorithm
 , copy: copy
@@ -6719,7 +6974,7 @@ module.exports = {
 , deepCopy: deepCopy
 }
 
-},{"./is":17}],16:[function(_dereq_,module,exports){
+},{}],"C:\\repos\\newforms\\node_modules\\isomorph\\format.js":[function(require,module,exports){
 'use strict';
 
 var slice = Array.prototype.slice
@@ -6776,7 +7031,7 @@ module.exports = {
 , fileSize: fileSize
 }
 
-},{}],17:[function(_dereq_,module,exports){
+},{}],"C:\\repos\\newforms\\node_modules\\isomorph\\is.js":[function(require,module,exports){
 'use strict';
 
 var toString = Object.prototype.toString
@@ -6844,7 +7099,7 @@ module.exports = {
 , String: isString
 }
 
-},{}],18:[function(_dereq_,module,exports){
+},{}],"C:\\repos\\newforms\\node_modules\\isomorph\\object.js":[function(require,module,exports){
 'use strict';
 
 /**
@@ -6854,6 +7109,14 @@ module.exports = {
 var hasOwn = (function() {
   var hasOwnProperty = Object.prototype.hasOwnProperty
   return function(obj, prop) { return hasOwnProperty.call(obj, prop) }
+})()
+
+/**
+ * Returns the type of an object as a lowercase string.
+ */
+var type = (function() {
+  var toString = Object.prototype.toString
+  return function(obj) { return toString.call(obj).slice(8, -1).toLowerCase() }
 })()
 
 /**
@@ -6937,7 +7200,7 @@ function get(obj, prop, defaultValue) {
  */
 function pop(obj, prop, defaultValue) {
   if (obj == null) {
-    throw new Error('popProp was given ' + obj)
+    throw new Error('pop was given ' + obj)
   }
   if (hasOwn(obj, prop)) {
     var value = obj[prop]
@@ -6945,7 +7208,7 @@ function pop(obj, prop, defaultValue) {
     return value
   }
   else if (arguments.length == 2) {
-    throw new Error("popProp was given an object which didn't have an own '" +
+    throw new Error("pop was given an object which didn't have an own '" +
                     prop + "' property, without a default value to return")
   }
   return defaultValue
@@ -6971,6 +7234,7 @@ function setDefault(obj, prop, defaultValue) {
 
 module.exports = {
   hasOwn: hasOwn
+, type: type
 , extend: extend
 , inherits: inherits
 , items: items
@@ -6981,10 +7245,10 @@ module.exports = {
 , setDefault: setDefault
 }
 
-},{}],19:[function(_dereq_,module,exports){
+},{}],"C:\\repos\\newforms\\node_modules\\isomorph\\time.js":[function(require,module,exports){
 'use strict';
 
-var is = _dereq_('./is')
+var is = require('./is')
 
 /**
  * Pads a number with a leading zero if necessary.
@@ -7334,7 +7598,7 @@ time.strftime = function(date, format, locale) {
 
 module.exports = time
 
-},{"./is":17}],20:[function(_dereq_,module,exports){
+},{"./is":"C:\\repos\\newforms\\node_modules\\isomorph\\is.js"}],"C:\\repos\\newforms\\node_modules\\isomorph\\url.js":[function(require,module,exports){
 'use strict';
 
 // parseUri 1.2.2
@@ -7425,13 +7689,13 @@ module.exports = {
 , makeUri: makeUri
 }
 
-},{}],21:[function(_dereq_,module,exports){
+},{}],"C:\\repos\\newforms\\node_modules\\validators\\lib\\errors.js":[function(require,module,exports){
 'use strict';
 
-var Concur = _dereq_('Concur')
-var format = _dereq_('isomorph/format').formatObj
-var is = _dereq_('isomorph/is')
-var object = _dereq_('isomorph/object')
+var Concur = require('Concur')
+var format = require('isomorph/format').formatObj
+var is = require('isomorph/is')
+var object = require('isomorph/object')
 
 var NON_FIELD_ERRORS = '__all__'
 
@@ -7588,12 +7852,18 @@ module.exports = {
   ValidationError: ValidationError
 }
 
-},{"Concur":13,"isomorph/format":16,"isomorph/is":17,"isomorph/object":18}],22:[function(_dereq_,module,exports){
+},{"Concur":"C:\\repos\\newforms\\node_modules\\Concur\\lib\\concur.js","isomorph/format":"C:\\repos\\newforms\\node_modules\\isomorph\\format.js","isomorph/is":"C:\\repos\\newforms\\node_modules\\isomorph\\is.js","isomorph/object":"C:\\repos\\newforms\\node_modules\\isomorph\\object.js"}],"C:\\repos\\newforms\\node_modules\\validators\\lib\\index.js":[function(require,module,exports){
 'use strict';
 
-var object = _dereq_('isomorph/object')
+// HACK: requiring './validators' here makes the circular import in ipv6.js work
+//       after browserification.
+module.exports = require('./validators')
+},{"./validators":"C:\\repos\\newforms\\node_modules\\validators\\lib\\validators.js"}],"C:\\repos\\newforms\\node_modules\\validators\\lib\\ipv6.js":[function(require,module,exports){
+'use strict';
 
-var errors = _dereq_('./errors')
+var object = require('isomorph/object')
+
+var errors = require('./errors')
 
 var ValidationError = errors.ValidationError
 
@@ -7727,7 +7997,7 @@ function _unpackIPv4(ipStr) {
  * Determines if we have a valid IPv6 address.
  */
 function isValidIPv6Address(ipStr) {
-  var validateIPv4Address = _dereq_('./validators').validateIPv4Address
+  var validateIPv4Address = require('./validators').validateIPv4Address
 
   // We need to have at least one ':'
   if (ipStr.indexOf(':') == -1) {
@@ -7872,17 +8142,17 @@ module.exports = {
 , isValidIPv6Address: isValidIPv6Address
 }
 
-},{"./errors":21,"./validators":23,"isomorph/object":18}],23:[function(_dereq_,module,exports){
+},{"./errors":"C:\\repos\\newforms\\node_modules\\validators\\lib\\errors.js","./validators":"C:\\repos\\newforms\\node_modules\\validators\\lib\\validators.js","isomorph/object":"C:\\repos\\newforms\\node_modules\\isomorph\\object.js"}],"C:\\repos\\newforms\\node_modules\\validators\\lib\\validators.js":[function(require,module,exports){
 'use strict';
 
-var Concur = _dereq_('Concur')
-var is = _dereq_('isomorph/is')
-var object = _dereq_('isomorph/object')
-var punycode = _dereq_('punycode')
-var url = _dereq_('isomorph/url')
+var Concur = require('Concur')
+var is = require('isomorph/is')
+var object = require('isomorph/object')
+var punycode = require('punycode')
+var url = require('isomorph/url')
 
-var errors = _dereq_('./errors')
-var ipv6 = _dereq_('./ipv6')
+var errors = require('./errors')
+var ipv6 = require('./ipv6')
 
 var ValidationError = errors.ValidationError
 var isValidIPv6Address = ipv6.isValidIPv6Address
@@ -8218,6 +8488,5 @@ module.exports = {
 , ipv6: ipv6
 }
 
-},{"./errors":21,"./ipv6":22,"Concur":13,"isomorph/is":17,"isomorph/object":18,"isomorph/url":20,"punycode":14}]},{},[10])
-(10)
+},{"./errors":"C:\\repos\\newforms\\node_modules\\validators\\lib\\errors.js","./ipv6":"C:\\repos\\newforms\\node_modules\\validators\\lib\\ipv6.js","Concur":"C:\\repos\\newforms\\node_modules\\Concur\\lib\\concur.js","isomorph/is":"C:\\repos\\newforms\\node_modules\\isomorph\\is.js","isomorph/object":"C:\\repos\\newforms\\node_modules\\isomorph\\object.js","isomorph/url":"C:\\repos\\newforms\\node_modules\\isomorph\\url.js","punycode":"C:\\repos\\newforms\\node_modules\\browserify\\node_modules\\punycode\\punycode.js"}]},{},["./lib/newforms.js"])("./lib/newforms.js")
 });

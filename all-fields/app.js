@@ -1,5 +1,3 @@
-/** @jsx React.DOM */
-
 'use strict';
 
 void function() {
@@ -121,10 +119,7 @@ var AllFieldsForm = forms.Form.extend({
 var AllFields = React.createClass({displayName: 'AllFields',
   getInitialState: function() {
     return({
-      form: new AllFieldsForm({
-        validation: 'auto'
-      , onStateChange: this.forceUpdate.bind(this)
-      })
+      form: new AllFieldsForm({onChange: this.forceUpdate.bind(this)})
     })
   }
 
@@ -164,10 +159,11 @@ var AllFields = React.createClass({displayName: 'AllFields',
 
 , onSubmit: function(e) {
     e.preventDefault()
-    this.state.form.validate(this.refs.form)
+    this.state.form.validate()
+    this.forceUpdate()
   }
 })
 
-React.renderComponent(React.createElement(AllFields, null), document.getElementById('app'))
+React.render(React.createElement(AllFields, null), document.getElementById('app'))
 
 }()
