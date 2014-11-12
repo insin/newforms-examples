@@ -1,5 +1,4 @@
-newforms-examples
-=================
+# newforms-examples
 
 ### [All Default Fields](http://insin.github.io/newforms-examples/all-fields/) ([source](https://github.com/insin/newforms-examples/tree/master/all-fields))
 
@@ -53,3 +52,13 @@ This example also shows:
 * validating and getting cleanedData out of multiple FormSets.
 * reusing a component for common contact fields.
 * implementing a Bootstrap 3 form layout using a `form.boundFieldsObj()` and a custom field rendering function.
+
+# Examples elsewhere
+
+### [Dinner Time!](http://insin.github.io/dinnertime/) ([source](https://github.com/insin/dinnertime/blob/master/src/Planner.jsx))
+
+Uses a `FormSet` to implement a list of forms which can be added to and deleted
+from.
+
+Uses `BoundField` and `Form` methods to highlight when fields become required or
+their valid/invalid status changes.
