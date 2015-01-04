@@ -174,13 +174,9 @@ var ContactFormComponent = React.createClass({displayName: 'ContactFormComponent
         nextProps.question !== this.props.question) {
       var formKwargs = this.getFormKwargs(nextProps, {
         data: (this.state.form.isBound ? this.state.form.data : null)
+      , errors: this.state.form.errors()
       })
       var form = new ContactForm(formKwargs)
-      // Carry over any errors present, as they're needed for display. We don't
-      // want to force the entire form to re-validate as we may be showing a new
-      // field and marking it as invalid before the user has had a chance to
-      // enter data.
-      form._errors = this.state.form._errors
       this.setState({form: form})
     }
   }

@@ -107,8 +107,8 @@ var AllFieldsForm = forms.Form.extend({
       return <tr key={bf.htmlname}>
         <th>{bf.labelTag()}</th>
         <td>{bf.render()}{help}</td>
-        <td>{''+bf.controlled()}</td>
-        <td>{JSON.stringify(bf.validation())}</td>
+        <td>{''+bf._isControlled()}</td>
+        <td>{JSON.stringify(bf._validation())}</td>
         <td>{errors}</td>
         <td className="cleaned-data">{cleanedData}</td>
       </tr>

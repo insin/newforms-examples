@@ -107,8 +107,8 @@ var AllFieldsForm = forms.Form.extend({
       return React.createElement("tr", {key: bf.htmlname}, 
         React.createElement("th", null, bf.labelTag()), 
         React.createElement("td", null, bf.render(), help), 
-        React.createElement("td", null, ''+bf.controlled()), 
-        React.createElement("td", null, JSON.stringify(bf.validation())), 
+        React.createElement("td", null, ''+bf._isControlled()), 
+        React.createElement("td", null, JSON.stringify(bf._validation())), 
         React.createElement("td", null, errors), 
         React.createElement("td", {className: "cleaned-data"}, cleanedData)
       )
