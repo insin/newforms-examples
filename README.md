@@ -55,6 +55,13 @@ This example also shows:
 
 # Examples elsewhere
 
+### [Isomorphic Lab](https://isomorphic-lab.herokuapp.com/addthing) ([source](https://github.com/insin/isomorphic-lab))
+
+Uses the same Form on the client and server for pre-rendering and progressive
+enhancement.
+
+Also reuses the same Form for API validation.
+
 ### [Dinner Time!](http://insin.github.io/dinnertime/) ([source](https://github.com/insin/dinnertime/blob/master/src/Planner.jsx))
 
 Uses a `FormSet` to implement a list of forms which can be added to and deleted
