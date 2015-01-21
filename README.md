@@ -1,5 +1,7 @@
 # newforms-examples
 
+Examples repository for [newforms](https://github.com/insin/newforms).
+
 ### [All Default Fields](http://insin.github.io/newforms-examples/all-fields/) ([source](https://github.com/insin/newforms-examples/tree/master/all-fields))
 
 A basic form with as many of the default newforms fields and widgets as possible, showing a range of the options supported by the fields.
