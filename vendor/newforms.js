@@ -2547,7 +2547,7 @@ function fieldDataHasChanged(previous, current) {
   return previous != current
 }
 
-if ('production' !== "production") {
+if ('production' !== "development") {
   var warnedOnImpliedValidateAuto = false
 }
 
@@ -2582,7 +2582,7 @@ var Form = Concur.extend({
 
     // Auto validation is implied when onChange is passed
     if (is.Function(kwargs.onChange)) {
-      if ('production' !== "production") {
+      if ('production' !== "development") {
         if (!warnedOnImpliedValidateAuto && kwargs.validation === 'auto') {
           info('Passing onChange to a Form or FormSet constructor also ' +
                "implies validation: 'auto' by default - you don't have " +
@@ -2620,7 +2620,7 @@ var Form = Concur.extend({
     // always modify this.fields; they should not modify baseFields.
     this.fields = copy.deepCopy(this.baseFields)
 
-    if ('production' !== "production") {
+    if ('production' !== "development") {
       // Now that form.fields exists, we can check if there's any configuration
       // which *needs* onChange on the form or its fields.
       if (!is.Function(kwargs.onChange) && this._needsOnChange()) {
@@ -2976,7 +2976,7 @@ Form.prototype._fieldCleaned = function(fieldName, err) {
   }
 
   if (err) {
-    if ("production" !== "production") {
+    if ("production" !== "development") {
       console.error('Error cleaning ' + this._formName() + '.' + fieldName +
                     ':' + err.message)
     }
@@ -4073,7 +4073,7 @@ FormSet.prototype._formCleaned = function(name, err) {
   }
 
   if (err) {
-    if ("production" !== "production") {
+    if ("production" !== "development") {
       console.error('Error cleaning formset[' + name + ']:' + err.message)
     }
     // Stop tracking validation progress on error, and don't call clean()
@@ -5755,7 +5755,7 @@ var formProps = {
   ])
 }
 
-if ("production" !== "production") {
+if ("production" !== "development") {
   var warnedAboutReactAddons = false
 }
 
@@ -5817,7 +5817,7 @@ var RenderForm = React.createClass({displayName: "RenderForm",
         return React.addons.cloneWithProps(React.Children.only(this.props.children), {form: this.form})
       }
       else {
-        if ("production" !== "production") {
+        if ("production" !== "development") {
           if (!warnedAboutReactAddons) {
             warning(
               'Children have been passed to RenderForm but React.addons.' +
@@ -6930,7 +6930,7 @@ var FormSet = require('./FormSet')
 
 var $__0=  require('./util'),warning=$__0.warning
 
-if ("production" !== "production") {
+if ("production" !== "development") {
   var warnedFormsetFactoryDeprecated = false
 }
 
@@ -6940,7 +6940,7 @@ if ("production" !== "production") {
  * @param {Object=} kwargs
  */
 function formsetFactory(form, kwargs) {
-  if ("production" !== "production") {
+  if ("production" !== "development") {
     if (!warnedFormsetFactoryDeprecated) {
       warning(
         'formsetFactory is deprecated and will be removed in version 0.12 - ' +
@@ -7455,7 +7455,7 @@ function allValid(formsOrFormsets) {
 var info = function() {}
 var warning = function() {}
 
-if ('production' !== "production") {
+if ('production' !== "development") {
   info = function(message) {
     console.warn('[newforms] ' + message)
   }
