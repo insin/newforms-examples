@@ -126,10 +126,10 @@ var AddressForm = forms.Form.extend({
 , country  : forms.ChoiceField({required: false, choices: COUNTRY_CHOICES})
 })
 
-var InlinePersonFormSet = forms.formsetFactory(InlinePersonForm)
-var PhoneNumberFormSet  = forms.formsetFactory(PhoneNumberForm)
-var EmailAddressFormSet = forms.formsetFactory(EmailAddressForm)
-var AddressFormSet      = forms.formsetFactory(AddressForm)
+var InlinePersonFormSet = forms.FormSet.extend({form: InlinePersonForm})
+var PhoneNumberFormSet  = forms.FormSet.extend({form: PhoneNumberForm})
+var EmailAddressFormSet = forms.FormSet.extend({form: EmailAddressForm})
+var AddressFormSet      = forms.FormSet.extend({form: AddressForm})
 
 // ======================================================== React Components ===
 
