@@ -1,6 +1,6 @@
 {
   "browser": true,
-  "node": true,
+  "node": false,
 
   "curly": true,
   "devel": true,
@@ -8,7 +8,8 @@
     "Concur": true,
     "forms": true,
     "isomorph": true,
-    "React": true
+    "React": true,
+    "File": true
   },
   "noempty": true,
   "newcap": false,

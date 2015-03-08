@@ -25,7 +25,7 @@ var dateFormats = [
 , '%d/%m/%y' // '25/10/06'
 ]
 var timeFormat = '%H:%M' // '14:30'
-var dateTimeFormats = dateFormats.map(function(df) { return df + ' ' + timeFormat})
+var dateTimeFormats = dateFormats.map(df => `${df} ${timeFormat}`)
 
 function FakeFile(name, url) {
   this.name = name
@@ -72,7 +72,7 @@ var AllFieldsForm = forms.Form.extend({
 , GenericIPAddressField: forms.GenericIPAddressField({label: 'Generic IP address field', helpText: 'An IPv4 or IPv6 address'})
 , SlugField: forms.SlugField({helpText: 'Letters, numbers, underscores, and hyphens only'})
 
-, clean: function() {
+, clean() {
     if (this.cleanedData.CharField == 'Answer' &&
         this.cleanedData.IntegerField &&
         this.cleanedData.IntegerField != 42) {
@@ -81,8 +81,8 @@ var AllFieldsForm = forms.Form.extend({
     }
   }
 
-, render: function() {
-    return this.boundFields().map(function(bf) {
+, render() {
+    return this.boundFields().map(bf => {
       // Display cleaneddata, indicating its type
       var cleanedData
       if (this.cleanedData && bf.name in this.cleanedData) {
@@ -106,9 +106,7 @@ var AllFieldsForm = forms.Form.extend({
                 : <p>{bf.helpText}</p>)
       }
 
-      var errors = bf.errors().messages().map(function(message) {
-        return <div>{message}</div>
-      })
+      var errors = bf.errors().messages().map(message => <div>{message}</div>)
 
       return <tr key={bf.htmlname}>
         <th>{bf.labelTag()}</th>
@@ -118,18 +116,18 @@ var AllFieldsForm = forms.Form.extend({
         <td>{errors}</td>
         <td className="cleaned-data">{cleanedData}</td>
       </tr>
-    }.bind(this))
+    })
   }
 })
 
 var AllFields = React.createClass({
-  getInitialState: function() {
+  getInitialState() {
     return({
       form: new AllFieldsForm({onChange: this.forceUpdate.bind(this)})
     })
   }
 
-, render: function() {
+, render() {
     var nonFieldErrors = this.state.form.nonFieldErrors()
     return <form encType='multipart/form-data' ref="form" onSubmit={this.onSubmit}>
       {nonFieldErrors.isPopulated() && <div>
@@ -163,7 +161,7 @@ var AllFields = React.createClass({
     </form>
   }
 
-, onSubmit: function(e) {
+, onSubmit(e) {
     e.preventDefault()
     this.state.form.validate()
     this.forceUpdate()

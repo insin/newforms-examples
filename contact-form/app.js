@@ -1,6 +1,4 @@
-'use strict';
-
-void function() {
+void function() { 'use strict';
 
 var extend = isomorph.object.extend
 
@@ -12,12 +10,10 @@ var STATES = [
 ]
 
 var BootstrapRadioInlineRenderer = forms.RadioFieldRenderer.extend({
-  render: function() {
-    return this.choiceInputs().map(function(input) {
-      return React.createElement("label", {className: "radio-inline"}, 
-        input.tag(), " ", input.choiceLabel
-      )
-    })
+  render:function() {
+    return this.choiceInputs().map(function(input)  {return React.createElement("label", {className: "radio-inline"}, 
+      input.tag(), " ", input.choiceLabel
+    );})
   }
 })
 
@@ -41,7 +37,7 @@ var ContactForm = forms.Form.extend({
   , widget: forms.RadioSelect({renderer: BootstrapRadioInlineRenderer})
   })
 
-, constructor: function(kwargs) {
+, "constructor":function(kwargs) {
     kwargs = extend({email: false, question: false}, kwargs)
     ContactForm.__super__.constructor.call(this, kwargs)
     this.fields.currentCustomer.label = 'Are you currently a ' + kwargs.company + ' Customer?'
@@ -53,7 +49,7 @@ var ContactForm = forms.Form.extend({
     }
   }
 
-, cleanPhoneNumber: function() {
+, cleanPhoneNumber:function() {
     var phoneNumber =  this.cleanedData.phoneNumber.replace(/-/g, '')
     if (phoneNumber.length < 10) {
       throw forms.ValidationError('Must contain at least 10 digits')
@@ -61,11 +57,11 @@ var ContactForm = forms.Form.extend({
     return phoneNumber
   }
 
-, render: function() {
+, render:function() {
     return this.visibleFields().map(this.renderField.bind(this))
   }
 
-, renderField: function(bf) {
+, renderField:function(bf) {
     var errors = bf.errors()
     var hasErrors = errors.isPopulated()
     var fieldCassName = $c({'form-control': bf.name !== 'currentCustomer'})
@@ -84,7 +80,7 @@ var ContactForm = forms.Form.extend({
 })
 
 var Example = React.createClass({displayName: 'Example',
-  getInitialState: function() {
+  getInitialState:function() {
     return {
       email: true
     , question: true
@@ -92,7 +88,7 @@ var Example = React.createClass({displayName: 'Example',
     }
   }
 
-, render: function() {
+, render:function() {
     var submitted
     if (this.state.submitted !== null) {
       submitted = React.createElement("div", {className: "alert alert-success"}, 
@@ -131,13 +127,13 @@ var Example = React.createClass({displayName: 'Example',
     )
   }
 
-, handleChange: function(field, e) {
+, handleChange:function(field, e) {
     var nextState = {}
     nextState[field] = e.target.checked
     this.setState(nextState)
   }
 
-, handleSubmit: function(data) {
+, handleSubmit:function(data) {
     this.setState({submitted: data})
   }
 })
@@ -146,20 +142,20 @@ var Example = React.createClass({displayName: 'Example',
  * A contact form with certain optional fields.
  */
 var ContactFormComponent = React.createClass({displayName: 'ContactFormComponent',
-  getDefaultProps: function() {
+  getDefaultProps:function() {
     return {
       email: true
     , question: false
     }
   }
 
-, getInitialState: function() {
+, getInitialState:function() {
     return {
       form: new ContactForm(this.getFormKwargs(this.props))
     }
   }
 
-, getFormKwargs: function(props, extraKwargs) {
+, getFormKwargs:function(props, extraKwargs) {
     return extend({
       validation: {on: 'change blur', delay: 500}
     , onChange: this.forceUpdate.bind(this)
@@ -169,7 +165,7 @@ var ContactFormComponent = React.createClass({displayName: 'ContactFormComponent
     }, extraKwargs)
   }
 
-, componentWillReceiveProps: function(nextProps) {
+, componentWillReceiveProps:function(nextProps) {
     if (nextProps.email !== this.props.email ||
         nextProps.question !== this.props.question) {
       var formKwargs = this.getFormKwargs(nextProps, {
@@ -181,14 +177,14 @@ var ContactFormComponent = React.createClass({displayName: 'ContactFormComponent
     }
   }
 
-, onSubmit: function(e) {
+, onSubmit:function(e) {
     e.preventDefault()
     var isValid = this.state.form.validate(this.refs.form)
     this.props.onSubmit(isValid ? this.state.form.cleanedData : null)
     this.forceUpdate()
   }
 
-, render: function() {
+, render:function() {
     return React.createElement("form", {ref: "form", onSubmit: this.onSubmit}, 
       React.createElement("div", {className: "panel-body"}, 
         React.createElement("div", {className: "form-horizontal"}, 

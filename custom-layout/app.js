@@ -1,6 +1,4 @@
-'use strict';
-
-void function() {
+void function() { 'use strict';
 
 /**
  * @interface
@@ -29,7 +27,7 @@ var GridLayout = FormLayout.extend({
       throw new Error('A layout must be specified for a GridLayout.')
     }
     this.layout = kwargs.layout
-    this.maxCol = Math.max.apply(Math, this.layout.map(function(row) { return row.length }))
+    this.maxCol = Math.max.apply(Math, this.layout.map(function(row)  {return row.length;}))
     this.fillerCssClass = kwargs.fillerCssClass
     this.topErrorCssClass = kwargs.topErrorCssClass
   }
@@ -81,7 +79,7 @@ var LayoutForm = forms.Form.extend({
     LayoutForm.__super__.constructor.call(this, kwargs)
   }
 
-, render: function() {
+, render:function() {
     return this.layout.render(this)
   }
 })
@@ -120,12 +118,10 @@ var ReleaseForm = LayoutForm.extend({
 , constructor: function ReleaseForm(projects, kwargs) {
     if (!(this instanceof ReleaseForm)) { return new ReleaseForm(projects, kwargs) }
     ReleaseForm.__super__.constructor.call(this, kwargs)
-    this.fields.project.setChoices(projects.map(function(project) {
-      return [project.id, project.name]
-    }))
+    this.fields.project.setChoices(projects.map(function(project)  {return [project.id, project.name];}))
   }
 
-, clean: function() {
+, clean:function() {
     if (this.cleanedData.startDate && this.cleanedData.releaseDate &&
         this.cleanedData.startDate > this.cleanedData.releaseDate) {
       this.addError('releaseDate', 'Cannot be prior to Start Date.')
@@ -144,14 +140,13 @@ var projects = [
 ]
 
 var CustomLayout = React.createClass({displayName: 'CustomLayout',
-  getInitialState: function() {
+  getInitialState:function() {
     return {
-      form: ReleaseForm(projects, {onChange: this.forceUpdate.bind(this)
-      })
+      form: ReleaseForm(projects, {onChange: this.forceUpdate.bind(this)})
     }
   }
 
-, render: function() {
+, render:function() {
     return React.createElement("form", {ref: "form", onSubmit: this.onSubmit}, 
       React.createElement("div", {className: "inline-block"}, 
         React.createElement("table", null, 
@@ -172,7 +167,7 @@ var CustomLayout = React.createClass({displayName: 'CustomLayout',
     )
   }
 
-, onSubmit: function(e) {
+, onSubmit:function(e) {
     e.preventDefault()
     this.state.form.validate()
     this.forceUpdate()

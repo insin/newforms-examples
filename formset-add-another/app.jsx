@@ -141,9 +141,7 @@ function addAnother(formset, e) {
 
 function field(bf, cssClass, options) {
   options = extend({label: true}, options)
-  var errors = bf.errors().messages().map(function(message) {
-    return <div className="help-block">{message}</div>
-  })
+  var errors = bf.errors().messages().map(message => <div className="help-block">{message}</div>)
   var errorClass = errors.length > 0 ? ' has-error' : ''
   return <div key={bf.htmlName} className={cssClass + errorClass}>
     <div className="form-group">
@@ -159,7 +157,7 @@ function widget(bf, cssClass) {
 }
 
 var AddContact = React.createClass({
-  getInitialState: function() {
+  getInitialState() {
     return {
       phoneNumberForms: new PhoneNumberFormSet({
         prefix: this.prefix('phone')
@@ -176,13 +174,13 @@ var AddContact = React.createClass({
     }
   }
 
-, prefix: function(formsetType) {
+, prefix(formsetType) {
     return this.props.prefix + '-' + formsetType
   }
 
 , addAnother: addAnother
 
-, getCleanedData: function() {
+, getCleanedData() {
     return {
       phoneNumbers: this.state.phoneNumberForms.cleanedData()
     , emailAddresses: this.state.emailAddressForms.cleanedData()
@@ -190,7 +188,7 @@ var AddContact = React.createClass({
     }
   }
 
-, onSubmit: function(e) {
+, onSubmit(e) {
     e.preventDefault()
     var areContactDetailsValid = all([this.state.phoneNumberForms.validate(),
                                       this.state.emailAddressForms.validate(),
@@ -198,7 +196,7 @@ var AddContact = React.createClass({
     this.props.onSubmit(areContactDetailsValid)
   }
 
-, render: function() {
+, render() {
     return <form ref="form" onSubmit={this.onSubmit}>
       <h2>Add {this.props.type}</h2>
       {this.props.children}
@@ -223,8 +221,8 @@ var AddContact = React.createClass({
     </form>
   }
 
-, renderPhoneNumberForms: function() {
-    return this.state.phoneNumberForms.forms().map(function(form, i) {
+, renderPhoneNumberForms() {
+    return this.state.phoneNumberForms.forms().map((form, i) => {
       var renderFunc = (i === 0 ? field : widget)
       var bfo = form.boundFieldsObj()
       return <div className="row">
@@ -234,8 +232,8 @@ var AddContact = React.createClass({
     })
   }
 
-, renderEmailAddressForms: function() {
-    return this.state.emailAddressForms.forms().map(function(form, i) {
+, renderEmailAddressForms() {
+    return this.state.emailAddressForms.forms().map((form, i) => {
       var renderFunc = (i === 0 ? field : widget)
       var bfo = form.boundFieldsObj()
       return <div className="row">
@@ -245,10 +243,10 @@ var AddContact = React.createClass({
     })
   }
 
-, renderAddressForms: function() {
+, renderAddressForms() {
     var forms = this.state.addressForms.forms()
     var multiple = forms.length > 1
-    return this.state.addressForms.forms().map(function(form, i) {
+    return this.state.addressForms.forms().map((form, i) => {
       var bfo = form.boundFieldsObj()
       return <div>
         {multiple && <h4>Address {i+1}</h4>}
@@ -270,7 +268,7 @@ var AddContact = React.createClass({
 })
 
 var AddPerson = React.createClass({
-  getInitialState: function() {
+  getInitialState() {
     return {
       form: new PersonForm({
         prefix: 'person'
@@ -280,7 +278,7 @@ var AddPerson = React.createClass({
     }
   }
 
-, onSubmit: function(areContactDetailsValid) {
+, onSubmit(areContactDetailsValid) {
     var isPersonFormValid = this.state.form.validate()
     var cleanedData = false
     if (isPersonFormValid && areContactDetailsValid) {
@@ -291,7 +289,7 @@ var AddPerson = React.createClass({
     this.setState({cleanedData: cleanedData})
   }
 
-, render: function() {
+, render() {
     var cleanedData
     if (this.state.cleanedData !== false) {
       cleanedData = <div>
@@ -312,10 +310,10 @@ var AddPerson = React.createClass({
     </AddContact>
   }
 
-, renderPersonForm: function() {
-    var topErrors = this.state.form.nonFieldErrors().messages().map(function(message) {
-      return <p className="alert alert-danger">{message}</p>
-    })
+, renderPersonForm() {
+    var topErrors = this.state.form.nonFieldErrors().messages().map(message =>
+      <p className="alert alert-danger">{message}</p>
+    )
     var bfo = this.state.form.boundFieldsObj()
     return <div>
       {topErrors}
@@ -333,7 +331,7 @@ var AddPerson = React.createClass({
 })
 
 var AddOrganisation = React.createClass({
-  getInitialState: function() {
+  getInitialState() {
     return {
       form: new OrganisationForm({
         prefix: 'org'
@@ -349,7 +347,7 @@ var AddOrganisation = React.createClass({
 
 , addAnother: addAnother
 
-, onSubmit: function(areContactDetailsValid) {
+, onSubmit(areContactDetailsValid) {
     var isOrgFormValid = this.state.form.validate()
     var arePeopleFormsValid = this.state.peopleForms.validate()
     var cleanedData = false
@@ -362,7 +360,7 @@ var AddOrganisation = React.createClass({
     this.setState({cleanedData: cleanedData})
   }
 
-, render: function() {
+, render() {
     var cleanedData
     if (this.state.cleanedData !== false) {
       cleanedData = <div>
@@ -402,10 +400,10 @@ var AddOrganisation = React.createClass({
     </AddContact>
   }
 
-, renderOrganisatonForm: function() {
-   var topErrors = this.state.form.nonFieldErrors().messages().map(function(message) {
-      return <div className="alert alert-error">{message}</div>
-    })
+, renderOrganisatonForm() {
+   var topErrors = this.state.form.nonFieldErrors().messages().map(message =>
+      <div className="alert alert-error">{message}</div>
+    )
     var bfo = this.state.form.boundFieldsObj()
     return <div>
       {topErrors}
@@ -415,21 +413,21 @@ var AddOrganisation = React.createClass({
     </div>
   }
 
-, renderPeopleForms: function() {
-    return this.state.peopleForms.forms().map(function(form) {
-      var cells = form.boundFields().map(function(bf) {
-        var errors = bf.errors().messages().map(function(message) {
-          return <div className="help-block">{message}</div>
-        })
+, renderPeopleForms() {
+    return this.state.peopleForms.forms().map(form => {
+      var cells = form.boundFields().map(bf => {
+        var errors = bf.errors().messages().map(message =>
+          <div className="help-block">{message}</div>
+        )
         var errorClass = errors.length > 0 ? 'has-error' : ''
         return <td className={errorClass} key={bf.htmlName}>
           {bf.asWidget({attrs: {className: 'form-control'}})}
           {errors}
         </td>
       })
-      var nonFieldErrors = form.nonFieldErrors().messages().map(function(message) {
-        return <div className="help-block">{message}</div>
-      })
+      var nonFieldErrors = form.nonFieldErrors().messages().map(message =>
+        <div className="help-block">{message}</div>
+      )
       var nonFieldErrorClass = nonFieldErrors.length > 0 ? 'has-non-field-error' : ''
       var rows = [<tr key={form.prefix} className={nonFieldErrorClass}>{cells}</tr>]
       if (nonFieldErrors.length > 0) {
@@ -438,12 +436,12 @@ var AddOrganisation = React.createClass({
         </tr>)
       }
       return rows
-    }.bind(this))
+    })
   }
 })
 
 var App = React.createClass({
-  render: function() {
+  render() {
     return <div className="container">
       <AddPerson/>
       <hr/>

@@ -25,7 +25,7 @@ function jsx(name) {
     }
 
     try {
-      file.contents = new Buffer(react.transform(file.contents.toString()))
+      file.contents = new Buffer(react.transform(file.contents.toString(), {harmony: true}))
       file.path = gutil.replaceExtension(file.path, '.js')
     }
     catch (err) {
