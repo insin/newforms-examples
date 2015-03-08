@@ -1,6 +1,11 @@
-'use strict';
+void function() { 'use strict';
 
-void function() {
+if ('File' in window) {
+  File.prototype.toJSON = function() {
+    var {name, size} = this
+    return {name, size}
+  }
+}
 
 var choices = [
   [1, 'foo']
@@ -29,7 +34,7 @@ function FakeFile(name, url) {
 FakeFile.prototype.toString = function() { return this.name }
 
 var AllFieldsForm = forms.Form.extend({
-  CharField: forms.CharField({minLength: 5, maxLength: 10, helpText: {__html: 'Any text between 5 and 10 characters long.<br>(Try "Answer" then the Integer field below)'}})
+  CharField: forms.CharField({minLength: 5, maxLength: 10, widgetAttrs: {autoFocus: true}, helpText: {__html: 'Any text between 5 and 10 characters long.<br>(Try "Answer" then the Integer field below)'}})
 , CharFieldWithTextareaWidget: forms.CharField({label: 'Char field (textarea)', widget: forms.Textarea})
 , CharFieldWithPasswordWidget: forms.CharField({widget: forms.PasswordInput})
 , IntegerField: forms.IntegerField({minValue: 42, maxValue: 420, helpText: 'Any whole number between 42 and 420', validation: 'onBlur'})
@@ -40,8 +45,9 @@ var AllFieldsForm = forms.Form.extend({
 , DateTimeField: forms.DateTimeField({inputFormats: dateTimeFormats, helpText: 'e.g. 2014-03-01 20:08'})
 , RegexField: forms.RegexField(/^I am Jack's /, {initial: "I am Jack's ", minLength: 20, helpText: 'Must begin with "I am Jack\'s " and be at least 20 characters long'})
 , EmailField: forms.EmailField()
-, FileField: forms.FileField({helpText: 'Required'})
+, FileField: forms.FileField({maxLength: 10, helpText: 'Required, file name 10 or fewer characters'})
 , FileFieldWithInitial: forms.FileField({initial: new FakeFile('Fake File', 'fake.file')})
+, MultipleFileField: forms.MultipleFileField({maxLength: 10, helpText: 'Required, file names 10 or fewer characters'})
 , ImageField: forms.ImageField({required: false, helpText: 'Optional'})
 , ImageFieldWithIniitial: forms.ImageField({required: false, initial: new FakeFile('Fake File', 'fake.file')   })
 , URLField: forms.URLField({label: 'URL field'})
