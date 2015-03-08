@@ -183,7 +183,7 @@ var ContactFormComponent = React.createClass({displayName: 'ContactFormComponent
 
 , onSubmit: function(e) {
     e.preventDefault()
-    var isValid = this.state.form.validate()
+    var isValid = this.state.form.validate(this.refs.form)
     this.props.onSubmit(isValid ? this.state.form.cleanedData : null)
     this.forceUpdate()
   }
