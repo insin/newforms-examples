@@ -1,8 +1,4 @@
-/** @jsx React.DOM */
-
-'use strict';
-
-void function() {
+void function() { 'use strict';
 
 // ========================================================= Aliases & Utils ===
 
@@ -303,18 +299,17 @@ var AddPerson = React.createClass({
         <pre>{JSON.stringify(this.state.cleanedData, null, ' ')}</pre>
       </div>
     }
-    return this.transferPropsTo(
-      <AddContact ref="contactDetails"
-                  type="Person"
-                  prefix="person"
-                  onSubmit={this.onSubmit}>
-        {cleanedData}
-        <fieldset>
-          <legend>Personal details</legend>
-          {this.renderPersonForm()}
-        </fieldset>
-      </AddContact>
-    )
+    return <AddContact {...this.props}
+                       ref="contactDetails"
+                       type="Person"
+                       prefix="person"
+                       onSubmit={this.onSubmit}>
+      {cleanedData}
+      <fieldset>
+        <legend>Personal details</legend>
+        {this.renderPersonForm()}
+      </fieldset>
+    </AddContact>
   }
 
 , renderPersonForm: function() {
@@ -375,37 +370,36 @@ var AddOrganisation = React.createClass({
         <pre>{JSON.stringify(this.state.cleanedData, null, ' ')}</pre>
       </div>
     }
-    return this.transferPropsTo(
-      <AddContact ref="contactDetails"
-                  type="Organisation"
-                  prefix="org"
-                  onSubmit={this.onSubmit}>
-        {cleanedData}
-        <fieldset>
-          <legend>Organisation</legend>
-          {this.renderOrganisatonForm()}
-        </fieldset>
-        <fieldset>
-          <legend>People</legend>
-          <table className="table table-condensed">
-            <thead>
-              <tr>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Job Title</th>
-                <th>Email</th>
-                <th>Mobile Phone</th>
-                <th>Direct Phone</th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.renderPeopleForms()}
-            </tbody>
-          </table>
-          <p><a href="#another" onClick={partial(this.addAnother, this.state.peopleForms)}>+ add another person</a></p>
-        </fieldset>
-      </AddContact>
-    )
+    return <AddContact {...this.props}
+                       ref="contactDetails"
+                       type="Organisation"
+                       prefix="org"
+                       onSubmit={this.onSubmit}>
+      {cleanedData}
+      <fieldset>
+        <legend>Organisation</legend>
+        {this.renderOrganisatonForm()}
+      </fieldset>
+      <fieldset>
+        <legend>People</legend>
+        <table className="table table-condensed">
+          <thead>
+            <tr>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Job Title</th>
+              <th>Email</th>
+              <th>Mobile Phone</th>
+              <th>Direct Phone</th>
+            </tr>
+          </thead>
+          <tbody>
+            {this.renderPeopleForms()}
+          </tbody>
+        </table>
+        <p><a href="#another" onClick={partial(this.addAnother, this.state.peopleForms)}>+ add another person</a></p>
+      </fieldset>
+    </AddContact>
   }
 
 , renderOrganisatonForm: function() {

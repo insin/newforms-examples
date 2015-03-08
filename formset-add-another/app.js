@@ -1,8 +1,4 @@
-/** @jsx React.DOM */
-
-'use strict';
-
-void function() {
+void function() { 'use strict';
 
 // ========================================================= Aliases & Utils ===
 
@@ -303,16 +299,15 @@ var AddPerson = React.createClass({displayName: 'AddPerson',
         React.createElement("pre", null, JSON.stringify(this.state.cleanedData, null, ' '))
       )
     }
-    return this.transferPropsTo(
-      React.createElement(AddContact, {ref: "contactDetails", 
-                  type: "Person", 
-                  prefix: "person", 
-                  onSubmit: this.onSubmit}, 
-        cleanedData, 
-        React.createElement("fieldset", null, 
-          React.createElement("legend", null, "Personal details"), 
-          this.renderPersonForm()
-        )
+    return React.createElement(AddContact, React.__spread({},  this.props, 
+                       {ref: "contactDetails", 
+                       type: "Person", 
+                       prefix: "person", 
+                       onSubmit: this.onSubmit}), 
+      cleanedData, 
+      React.createElement("fieldset", null, 
+        React.createElement("legend", null, "Personal details"), 
+        this.renderPersonForm()
       )
     )
   }
@@ -375,35 +370,34 @@ var AddOrganisation = React.createClass({displayName: 'AddOrganisation',
         React.createElement("pre", null, JSON.stringify(this.state.cleanedData, null, ' '))
       )
     }
-    return this.transferPropsTo(
-      React.createElement(AddContact, {ref: "contactDetails", 
-                  type: "Organisation", 
-                  prefix: "org", 
-                  onSubmit: this.onSubmit}, 
-        cleanedData, 
-        React.createElement("fieldset", null, 
-          React.createElement("legend", null, "Organisation"), 
-          this.renderOrganisatonForm()
-        ), 
-        React.createElement("fieldset", null, 
-          React.createElement("legend", null, "People"), 
-          React.createElement("table", {className: "table table-condensed"}, 
-            React.createElement("thead", null, 
-              React.createElement("tr", null, 
-                React.createElement("th", null, "First Name"), 
-                React.createElement("th", null, "Last Name"), 
-                React.createElement("th", null, "Job Title"), 
-                React.createElement("th", null, "Email"), 
-                React.createElement("th", null, "Mobile Phone"), 
-                React.createElement("th", null, "Direct Phone")
-              )
-            ), 
-            React.createElement("tbody", null, 
-              this.renderPeopleForms()
+    return React.createElement(AddContact, React.__spread({},  this.props, 
+                       {ref: "contactDetails", 
+                       type: "Organisation", 
+                       prefix: "org", 
+                       onSubmit: this.onSubmit}), 
+      cleanedData, 
+      React.createElement("fieldset", null, 
+        React.createElement("legend", null, "Organisation"), 
+        this.renderOrganisatonForm()
+      ), 
+      React.createElement("fieldset", null, 
+        React.createElement("legend", null, "People"), 
+        React.createElement("table", {className: "table table-condensed"}, 
+          React.createElement("thead", null, 
+            React.createElement("tr", null, 
+              React.createElement("th", null, "First Name"), 
+              React.createElement("th", null, "Last Name"), 
+              React.createElement("th", null, "Job Title"), 
+              React.createElement("th", null, "Email"), 
+              React.createElement("th", null, "Mobile Phone"), 
+              React.createElement("th", null, "Direct Phone")
             )
           ), 
-          React.createElement("p", null, React.createElement("a", {href: "#another", onClick: partial(this.addAnother, this.state.peopleForms)}, "+ add another person"))
-        )
+          React.createElement("tbody", null, 
+            this.renderPeopleForms()
+          )
+        ), 
+        React.createElement("p", null, React.createElement("a", {href: "#another", onClick: partial(this.addAnother, this.state.peopleForms)}, "+ add another person"))
       )
     )
   }
