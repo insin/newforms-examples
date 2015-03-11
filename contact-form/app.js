@@ -37,7 +37,7 @@ var ContactForm = forms.Form.extend({
   , widget: forms.RadioSelect({renderer: BootstrapRadioInlineRenderer})
   })
 
-, "constructor":function(kwargs) {
+, constructor:function(kwargs) {
     kwargs = extend({email: false, question: false}, kwargs)
     ContactForm.__super__.constructor.call(this, kwargs)
     this.fields.currentCustomer.label = 'Are you currently a ' + kwargs.company + ' Customer?'
@@ -79,7 +79,7 @@ var ContactForm = forms.Form.extend({
   }
 })
 
-var Example = React.createClass({displayName: 'Example',
+var Example = React.createClass({displayName: "Example",
   getInitialState:function() {
     return {
       email: true
@@ -141,7 +141,7 @@ var Example = React.createClass({displayName: 'Example',
 /**
  * A contact form with certain optional fields.
  */
-var ContactFormComponent = React.createClass({displayName: 'ContactFormComponent',
+var ContactFormComponent = React.createClass({displayName: "ContactFormComponent",
   getDefaultProps:function() {
     return {
       email: true

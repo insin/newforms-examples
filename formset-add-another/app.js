@@ -156,7 +156,7 @@ function widget(bf, cssClass) {
   return field(bf, cssClass, {label: false})
 }
 
-var AddContact = React.createClass({displayName: 'AddContact',
+var AddContact = React.createClass({displayName: "AddContact",
   getInitialState:function() {
     return {
       phoneNumberForms: new PhoneNumberFormSet({
@@ -267,7 +267,7 @@ var AddContact = React.createClass({displayName: 'AddContact',
   }
 })
 
-var AddPerson = React.createClass({displayName: 'AddPerson',
+var AddPerson = React.createClass({displayName: "AddPerson",
   getInitialState:function() {
     return {
       form: new PersonForm({
@@ -330,7 +330,7 @@ var AddPerson = React.createClass({displayName: 'AddPerson',
   }
 })
 
-var AddOrganisation = React.createClass({displayName: 'AddOrganisation',
+var AddOrganisation = React.createClass({displayName: "AddOrganisation",
   getInitialState:function() {
     return {
       form: new OrganisationForm({
@@ -440,7 +440,7 @@ var AddOrganisation = React.createClass({displayName: 'AddOrganisation',
   }
 })
 
-var App = React.createClass({displayName: 'App',
+var App = React.createClass({displayName: "App",
   render:function() {
     return React.createElement("div", {className: "container"}, 
       React.createElement(AddPerson, null), 

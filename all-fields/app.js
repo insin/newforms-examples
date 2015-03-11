@@ -120,7 +120,7 @@ var AllFieldsForm = forms.Form.extend({
   }
 })
 
-var AllFields = React.createClass({displayName: 'AllFields',
+var AllFields = React.createClass({displayName: "AllFields",
   getInitialState:function() {
     return({
       form: new AllFieldsForm({onChange: this.forceUpdate.bind(this)})

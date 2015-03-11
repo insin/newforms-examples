@@ -139,7 +139,7 @@ var projects = [
 , {id: 3, name: 'Test Project 3'}
 ]
 
-var CustomLayout = React.createClass({displayName: 'CustomLayout',
+var CustomLayout = React.createClass({displayName: "CustomLayout",
   getInitialState:function() {
     return {
       form: ReleaseForm(projects, {onChange: this.forceUpdate.bind(this)})
