@@ -163,7 +163,7 @@ var AllFields = React.createClass({
 
 , onSubmit(e) {
     e.preventDefault()
-    this.state.form.validate()
+    this.state.form.validate(this.refs.form)
     this.forceUpdate()
   }
 })
