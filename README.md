@@ -57,7 +57,7 @@ This example also shows:
 
 # Examples elsewhere
 
-### [Isomorphic Lab](https://isomorphic-lab.herokuapp.com/addthing) ([source](https://github.com/insin/isomorphic-lab))
+### [Isomorphic Lab](https://isomorphic-lab.herokuapp.com/add-thing) ([source](https://github.com/insin/isomorphic-lab))
 
 Uses the same Form on the client and server for pre-rendering and progressive
 enhancement.
